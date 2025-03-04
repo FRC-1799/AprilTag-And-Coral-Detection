@@ -3,7 +3,7 @@ import math
 
 class PhotonLibConstants:
     shouldTestAprilTags = True
-    APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0"
+    APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0/home/swerve/Pictures/Webcam/2025-02-01-113717.jpg"
     APRIL_TAG_BACK_CAMERA_NAME = "AprilTag1"
     POSE_AMBIGUITY_TOLERANCE = 0.20
     REEF_WIDTH = 0.25
