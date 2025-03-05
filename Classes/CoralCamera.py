@@ -127,6 +127,6 @@ class CoralCamera:
 
 
             cv2.imshow('heheh', frame)
-            cv2.waitKey(1)  # Ensures OpenCV window updates properly
+            cv2.waitKey(1)
 
 

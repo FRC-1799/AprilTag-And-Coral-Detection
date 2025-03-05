@@ -6,14 +6,13 @@ import wpimath
 from ConstantsAndUtils.Constants import PhotonLibConstants, CoralAndAlgaeCameraConstants
 from Classes.AprilTagCamera import *
 import multiprocessing
-from wpimath.geometry import Pose3d, Transform3d, Translation2d, Rotation2d, Rotation3d
+from wpimath.geometry import Pose3d, Rotation3d
 import keyboard
 import Classes.CoralCamera as CoralCamera
 from wpilib import DriverStation
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-import subprocess
 
 def grab_past_reef(reefSubscribers):
     defaultValue = [False for _ in range(12)]
@@ -47,9 +46,6 @@ def main():
         
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
             robotPosition=robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
-
-        if robotPosition:
-            robotPosePublisher.set(robotPosition.estimatedPose, int(timestamp))
         
         return robotPosition, timestamp
 
@@ -141,8 +137,6 @@ def main():
             aprilTags = aprilTagCameraFront.get_tags()
             if aprilTags:
                 robotPosition, timestamp = fetchRobotPosition()
-                if DriverStation.getAlliance == DriverStation.Alliance.kRed:
-                    robotPosition = robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
 
                 if robotPosition:
                     robotPosePublisher.set(robotPosition.estimatedPose, int(timestamp))
@@ -152,7 +146,6 @@ def main():
             robotPosition = Pose3d(Translation3d(0,0,0), Rotation3d(0,0,0))
             
         if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
-
             reefCameraConnectionPublisher.set(True)
             reef = grab_past_reef(coralSubscribers)
             coralCamera.findCoralsOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
