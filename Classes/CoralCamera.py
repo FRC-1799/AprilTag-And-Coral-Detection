@@ -57,19 +57,19 @@ class CoralCamera:
                                 if vectorAlreadyCollided:
                                     break
                                 
-                                for hitboxSection in reefHitboxes:
-                                    for hitbox in hitboxSection:
+                                for hitboxSection in len(reefHitboxes):
+                                    for hitbox in len(hitboxSection):
 
                                         # If the Pose3d is colliding with the hitbox, we know which level it is on, so we set that level to true
                                         if hitbox.colidePose3d(positionLocation):
-                                            reef[reefHitboxes.index(hitboxSection)][hitboxSection.index(hitbox)] = True
+                                            reef[hitboxSection][hitbox] = True
                                             vectorAlreadyCollided = True
                                             break
                                     if vectorAlreadyCollided:
                                         break
                             
                             # When the loop is exited, reset this variable in order to be able to search again
-                            vectorAlreadyCollided = False if vectorAlreadyCollided else True
+                            vectorAlreadyCollided = False 
                                                 
 
                             # Labeling of the detections
