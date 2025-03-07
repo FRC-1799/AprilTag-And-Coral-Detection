@@ -152,6 +152,7 @@ def main():
         if (aprilTagCameraFront.isConnected() or aprilTagCameraBack.isConnected()) and Constants.PhotonLibConstants.shouldTestAprilTags:
             aprilTagCameraConnectionPublisher.set(True)
             aprilTags = aprilTagCameraFront.get_tags()
+            #print(aprilTags)
             if aprilTags:
                 robotPosition, timestamp = fetchRobotPosition()
                 if DriverStation.getAlliance == DriverStation.Alliance.kRed:
@@ -159,6 +160,8 @@ def main():
 
                 if robotPosition:
                     robotPosePublisher.set(robotPosition.estimatedPose, int(timestamp))
+                else:
+                    robotPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
 
         # Only used for testing just coral
         if not Constants.PhotonLibConstants.shouldTestAprilTags:
