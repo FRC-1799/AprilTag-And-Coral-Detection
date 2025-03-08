@@ -76,7 +76,7 @@ def main():
                 algaeLevelBoolVals.append(algaeSection[level])
             publisher.set(algaeLevelBoolVals) 
 
-    def createReefPubSub() -> list[list]:
+    def createReefPubSub(visionTable) -> list[list]:
         """
         Creates the publishers and subscribers for the reef, including both the algae and coral
         subscribers and publishers
@@ -85,7 +85,7 @@ def main():
         list[list] - List of all of the lists for the publishers and subscribers
         """
 
-        reefTable = inst.getTable("ReefLocationTable")
+        reefTable = visionTable.getTable("ReefLocationTable")
         reefL1Topic = reefTable.getBooleanArrayTopic("ReefL1")
         reefL2Topic = reefTable.getBooleanArrayTopic("ReefL2")
         reefL3Topic = reefTable.getBooleanArrayTopic("ReefL3")
@@ -136,7 +136,7 @@ def main():
     robotPosition = None
 
     # Reef Publishers and Subscribers
-    coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers = createReefPubSub()
+    coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers = createReefPubSub(visionTable)
 
     reefCameraConnectionTopic = inst.getBooleanTopic("ReefCameraConnection") # if the reef camera is connected
     reefCameraConnectionPublisher = reefCameraConnectionTopic.getEntry(True)
