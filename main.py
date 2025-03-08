@@ -120,9 +120,9 @@ def main():
 
     # Grabs the Robot's topic and publisher
     visionTable = inst.getTable("Vision")
-    robotFrontPoseTopic = visionTable.getStructTopic("FrontVisionRobotPose", Pose3d)
+    robotFrontPoseTopic = visionTable.getStructTopic("FrontRobotPose", Pose3d)
     robotFrontPosePublisher = robotFrontPoseTopic.publish()
-    robotBackPoseTopic = visionTable.getStructTopic("BackVisionRobotPose", Pose3d)
+    robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
     robotBackPosePublisher = robotBackPoseTopic.publish()
     aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
     aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
