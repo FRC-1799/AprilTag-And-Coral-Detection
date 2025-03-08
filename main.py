@@ -59,16 +59,22 @@ def main():
         
         return robotPosition, timestamp
     
-    def updateReef():
+    def updateReef(coralPublishers, algaePublishers):
         """
         Updates the reef's values on Network Tables
         """
 
         for level, publisher in enumerate(coralPublishers):
-            reefLevelBoolVals = []
-            for reefSection in reef:
-                reefLevelBoolVals.append(reefSection[level])
-            publisher.set(reefLevelBoolVals) 
+            coralLevelBoolVals = []
+            for coralSection in reef:
+                coralLevelBoolVals.append(coralSection[level])
+            publisher.set(coralLevelBoolVals) 
+            
+        for level, publisher in enumerate(algaePublishers):
+            algaeLevelBoolVals = []
+            for algaeSection in reef:
+                algaeLevelBoolVals.append(algaeSection[level])
+            publisher.set(algaeLevelBoolVals) 
 
     def createReefPubSub() -> list[list]:
         """
@@ -105,7 +111,7 @@ def main():
     # Reef Values
     reef = [[False for _ in range(4)] for _ in range(12)]
     algae = [[False for _ in range(2)] for _ in range(12)]
-    defaultReef = [False for _ in range(4)]
+    defaultReef = [False for _ in range(4)] # Used for subscribing
     defaultAlgae = [False for _ in range(2)]
     algaeNotSeenCounterList = [[0 for _ in range(2)] for _ in range(12)]
 
@@ -188,8 +194,7 @@ def main():
             reefCameraConnectionPublisher.set(True)
             reef = grab_past_reef(coralSubscribers)
             coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
-            
-            updateReef()
+            updateReef(coralPublishers, algaePublishers)
                 
             for reefSection in range(len(reef)):
                 for index in range(len(reefSection)):
