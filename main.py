@@ -11,6 +11,7 @@ from wpilib import DriverStation
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
+import pyudev
 
 def grab_past_reef(reefSubscribers) -> list[list]:
     """
@@ -33,15 +34,12 @@ def grab_past_reef(reefSubscribers) -> list[list]:
     return reef 
 
 def coralCameraIndex() -> int:
-    return 0
-    graph = FilterGraph()
-    
-    try:
-        device = graph.get_input_devices().index(Constants.CoralAndAlgaeCameraConstants.CORAL_CAMERA_NAME)
-    except ValueError:
-        device = 0
-        
-    return device
+    context = pyudev.Context()
+    device_file = "/dev/video{}".format(device)
+    device = pyudev.Devices.from_device_file(context, device_file)
+    info = { item[0] : item[1] for item in device.items()}
+    return info["ID_SERIAL_SHORT"]
+
 
 
     
