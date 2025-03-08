@@ -85,7 +85,7 @@ def main():
         list[list] - List of all of the lists for the publishers and subscribers
         """
 
-        reefTable = visionTable.getTable("ReefLocationTable")
+        reefTable = visionTable.getTable("CoralLocationTable")
         reefL1Topic = reefTable.getBooleanArrayTopic("ReefL1")
         reefL2Topic = reefTable.getBooleanArrayTopic("ReefL2")
         reefL3Topic = reefTable.getBooleanArrayTopic("ReefL3")
