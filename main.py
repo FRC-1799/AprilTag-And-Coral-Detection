@@ -155,8 +155,8 @@ def main():
             cv2.destroyAllWindows()
             break
 
-            if Constants.PhotonLibConstants.shouldTestAprilTags:
-            
+        if Constants.PhotonLibConstants.shouldTestAprilTags:
+        
             if aprilTagCameraFront.isConnected():
                 aprilTagCameraConnectionPublisher.set(True)
                 aprilTagsFront = aprilTagCameraFront.get_tags()
