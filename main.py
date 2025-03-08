@@ -4,14 +4,13 @@ import cv2
 import wpimath
 from ConstantsAndUtils.Constants import PhotonLibConstants, CoralAndAlgaeCameraConstants
 from Classes.AprilTagCamera import *
-from wpimath.geometry import Pose3d, Transform3d, Translation2d, Rotation2d, Rotation3d
+from wpimath.geometry import Pose3d, Rotation3d
 import keyboard
 import Classes.CoralCamera as CoralCamera
 from wpilib import DriverStation
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-import subprocess
 
 def grab_past_reef(reefSubscribers) -> list[list]:
     """
@@ -59,7 +58,6 @@ def main():
         
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
             robotPosition=robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
-            
         
         return robotPosition, timestamp
     
@@ -157,7 +155,7 @@ def main():
             cv2.destroyAllWindows()
             break
 
-        if Constants.PhotonLibConstants.shouldTestAprilTags:
+            if Constants.PhotonLibConstants.shouldTestAprilTags:
             
             if aprilTagCameraFront.isConnected():
                 aprilTagCameraConnectionPublisher.set(True)
@@ -182,6 +180,7 @@ def main():
                         
                     else:
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+                       
 
         # Only used for testing just coral
         if not Constants.PhotonLibConstants.shouldTestAprilTags:
