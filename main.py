@@ -119,10 +119,18 @@ def main():
     aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION)
 
     # Grabs the Robot's topic and publisher
-    robotPoseTopic = inst.getStructTopic("VisionRobotPose", Pose3d)
-    robotPosePublisher = robotPoseTopic.publish()
-    aprilTagCameraConnectionTopic = inst.getBooleanTopic("AprilTagCameraConnection")
+    visionTable = inst.getTable("Vision")
+    robotFrontPoseTopic = visionTable.getStructTopic("FrontVisionRobotPose", Pose3d)
+    robotFrontPosePublisher = robotFrontPoseTopic.publish()
+    robotBackPoseTopic = visionTable.getStructTopic("BackVisionRobotPose", Pose3d)
+    robotBackPosePublisher = robotBackPoseTopic.publish()
+    aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
     aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
+    aprilTagFrontCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampFront")
+    aprilTagFrontCameraTimestampPublisher = aprilTagFrontCameraTimestampTopic.publish()
+    aprilTagBackCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampBack")
+    aprilTagBackCameraTimestampPublisher = aprilTagBackCameraTimestampTopic.publish()
+
     robotPosition = None
 
     # Reef Publishers and Subscribers
@@ -149,19 +157,31 @@ def main():
             cv2.destroyAllWindows()
             break
 
-        if (aprilTagCameraFront.isConnected() or aprilTagCameraBack.isConnected()) and Constants.PhotonLibConstants.shouldTestAprilTags:
-            aprilTagCameraConnectionPublisher.set(True)
-            aprilTags = aprilTagCameraFront.get_tags()
-            #print(aprilTags)
-            if aprilTags:
-                robotPosition, timestamp = fetchRobotPosition()
-                if DriverStation.getAlliance == DriverStation.Alliance.kRed:
-                    robotPosition = robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
-
-                if robotPosition:
-                    robotPosePublisher.set(robotPosition.estimatedPose, int(timestamp))
-                else:
-                    robotPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+        if Constants.PhotonLibConstants.shouldTestAprilTags:
+            
+            if aprilTagCameraFront.isConnected():
+                aprilTagCameraConnectionPublisher.set(True)
+                aprilTagsFront = aprilTagCameraFront.get_tags()
+                if aprilTagsFront:
+                    robotPositionFront, timestamp = fetchRobotPosition()
+                    if robotPositionFront:
+                        robotFrontPosePublisher.set(robotPosition.estimatedPose)
+                        aprilTagFrontCameraTimestampPublisher.set(timestamp)
+                        
+                    else:
+                        robotFrontPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+                        
+            if aprilTagCameraBack.isConnected():
+                aprilTagCameraConnectionPublisher.set(True)
+                aprilTagsBack = aprilTagCameraBack.get_tags()
+                if aprilTagsBack:
+                    robotPositionBack, timestamp = fetchRobotPosition()
+                    if robotPositionBack:
+                        robotBackPosePublisher.set(robotPositionBack.estimatedPose)
+                        aprilTagBackCameraTimestampPublisher.set(timestamp)
+                        
+                    else:
+                        robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
 
         # Only used for testing just coral
         if not Constants.PhotonLibConstants.shouldTestAprilTags:
