@@ -19,7 +19,7 @@ class CoralCamera:
         self.screenHeight = CoralAndAlgaeCameraConstants.verticalPixels
         self.camera = cv2.VideoCapture(cameraIndex)
 
-    def findCoralsOnReef(self, reef: list[list[bool]], algae: list[list[bool]], reefHitboxes: list, algaeHitboxes: list, algaeNotSeenCounter: list, robotPosition):
+    def findCoralsAndAlgaesOnReef(self, reef: list[list[bool]], algae: list[list[bool]], reefHitboxes: list, algaeHitboxes: list, algaeNotSeenCounter: list, robotPosition):
         ret, frame = self.camera.read()
 
         if ret:

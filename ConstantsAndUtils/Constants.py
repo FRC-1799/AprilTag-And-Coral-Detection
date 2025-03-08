@@ -13,7 +13,7 @@ class PhotonLibConstants:
     
     # Camera Transformation    
     ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(0.165, -0.249, 0.5245, Rotation3d(0, 0, 0)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
-    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-0.339, -0.204, 0.4745, Rotation3d(0, 0, 0)) # Back camera. This one is for april tags. ID 1
+    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-0.339, -0.204, 0.4745, Rotation3d(0, 0, 180)) # Back camera. This one is for april tags. ID 1
 
     POSE3D_REEF_LOCATIONS = [
         [Pose3d(4.75, 3.25, 0.45, Rotation3d()), Pose3d(4.75, 3.25, 0.8, Rotation3d()), Pose3d(4.75, 3.25, 1.2, Rotation3d()), Pose3d(4.75, 3.25, 1.825498, Rotation3d())],
