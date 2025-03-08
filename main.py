@@ -47,7 +47,7 @@ def coralCameraIndex() -> int:
 
     
 def main():
-    def fetchRobotPosition() -> tuple[Pose3d, float]:
+    def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
         """
         Calculates robot position and adds it to the queue
 
@@ -55,7 +55,7 @@ def main():
         tuple[Pose3d, float] - the position of the robot as well as the timestamp this position was 
         obtained at
         """
-        robotPosition, timestamp = aprilTagCameraFront.get_estimated_global_pose()
+        robotPosition, timestamp = camera.get_estimated_global_pose()
         
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
             robotPosition=robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
@@ -163,9 +163,9 @@ def main():
                 aprilTagCameraConnectionPublisher.set(True)
                 aprilTagsFront = aprilTagCameraFront.get_tags()
                 if aprilTagsFront:
-                    robotPositionFront, timestamp = fetchRobotPosition()
+                    robotPositionFront, timestamp = fetchRobotPosition(aprilTagCameraFront)
                     if robotPositionFront:
-                        robotFrontPosePublisher.set(robotPosition.estimatedPose)
+                        robotFrontPosePublisher.set(robotPositionFront.estimatedPose)
                         aprilTagFrontCameraTimestampPublisher.set(timestamp)
                         
                     else:
@@ -175,7 +175,7 @@ def main():
                 aprilTagCameraConnectionPublisher.set(True)
                 aprilTagsBack = aprilTagCameraBack.get_tags()
                 if aprilTagsBack:
-                    robotPositionBack, timestamp = fetchRobotPosition()
+                    robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
                     if robotPositionBack:
                         robotBackPosePublisher.set(robotPositionBack.estimatedPose)
                         aprilTagBackCameraTimestampPublisher.set(timestamp)
