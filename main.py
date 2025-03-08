@@ -97,7 +97,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    #inst.setServerTeam(1799)
+    inst.setServerTeam(1799)
     if Constants.CoralAndAlgaeCameraConstants.robotReal:
         inst.startClient4("Vision")
     else:
