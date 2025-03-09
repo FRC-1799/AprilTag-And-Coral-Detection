@@ -57,9 +57,11 @@ class CoralAndAlgaeCameraConstants:
     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
     ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(0.174, -0.249, 0.9305, Rotation3d(0, 0, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
+
     CORAL_CAMERA_NAME = "ArducamCoral"
     cameraPosition = (2.513, 3.997, 0.72)
-    vectorLengthToExtend = 30 # m?
+    vectorLengthToExtend = 70 # m
+    vectorDistanceBetweenExtensions = 2
     radius = 0.1524
     confidenceTolerance = 0.60
     algaeViewedTolerance = 100 # Times we can not see the algae before we mark it as false

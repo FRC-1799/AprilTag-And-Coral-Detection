@@ -66,7 +66,7 @@ class hitbox:
                 blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.radius)
                 pose3dList[i][j] = transformedPose
             
-        return blueHitboxes, blueHitboxes
+        return blueHitboxes, pose3dList
     
     @staticmethod
     def makeAlgaeHitboxes():
