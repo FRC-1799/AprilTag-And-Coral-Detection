@@ -59,22 +59,35 @@ def main():
         
         return robotPosition, timestamp
     
-    def updateReef(coralPublishers, algaePublishers):
+    def updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher):
         """
         Updates the reef's values on Network Tables
         """
 
+        coralPose3dSeen = []
         for level, publisher in enumerate(coralPublishers):
             coralLevelBoolVals = []
+            
             for coralSection in reef:
                 coralLevelBoolVals.append(coralSection[level])
+                if coralSection[level]:
+                    coralPose3dSeen.append(pose3dCoralValues[reef.index(coralSection)][level])
             publisher.set(coralLevelBoolVals) 
-            
+        
+        coralValuesSeenPublisher.set(coralPose3dSeen)
+        
+        algaePose3dSeen = []
         for level, publisher in enumerate(algaePublishers):
             algaeLevelBoolVals = []
+            
             for algaeSection in reef:
                 algaeLevelBoolVals.append(algaeSection[level])
+                if algaeSection[level]:
+                    algaePose3dSeen.append(pose3dAlgaeValues[reef.index(algaeSection)][level])
+                    
             publisher.set(algaeLevelBoolVals) 
+            
+        algaeValuesSeenPublisher.set(algaePose3dSeen)
 
     def createReefPubSub(visionTable) -> list[list]:
         """
@@ -96,8 +109,13 @@ def main():
         coralPublishers = [reefL1Topic.publish(), reefL2Topic.publish(), reefL3Topic.publish(), reefL4Topic.publish()]
         algaeSubscribers = [algae1Topic.subscribe(defaultAlgae), algae2Topic.subscribe(defaultAlgae)]
         algaePublishers = [algae1Topic.publish(), algae2Topic.publish()]
+        coralValuesSeenTopic = reefTable.getStructArrayTopic("CoralSeen",Pose3d)
+        coralValuesSeenPublisher = coralValuesSeenTopic.publish()
+        algaeValuesSeenTopic = reefTable.getStructArrayTopic("AlgaeSeen", Pose3d)
+        algaeValuesSeenPublisher = algaeValuesSeenTopic.publish()
 
-        return coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers
+
+        return coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
@@ -136,7 +154,7 @@ def main():
     robotPosition = None
 
     # Reef Publishers and Subscribers
-    coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers = createReefPubSub(visionTable)
+    coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher = createReefPubSub(visionTable)
 
     reefCameraConnectionTopic = inst.getBooleanTopic("ReefCameraConnection") # if the reef camera is connected
     reefCameraConnectionPublisher = reefCameraConnectionTopic.getEntry(True)
@@ -150,7 +168,7 @@ def main():
     coralCamera = CoralCamera.CoralCamera(cameraIndex=coralCameraIndex())
     reefCameraConnectionPublisher.set(coralCamera.camera.isOpened())
     
-    coralHitboxes, pose3dReefValues = hitbox.makeCoralHitboxes()
+    coralHitboxes, pose3dCoralValues = hitbox.makeCoralHitboxes()
     algaeHitboxes, pose3dAlgaeValues = hitbox.makeAlgaeHitboxes()
     
     while True:
@@ -194,12 +212,12 @@ def main():
             reefCameraConnectionPublisher.set(True)
             reef = grab_past_reef(coralSubscribers)
             coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
-            updateReef(coralPublishers, algaePublishers)
+            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher)
                 
             for reefSection in range(len(reef)):
                 for index in range(len(reefSection)):
                     if reef[reefSection][index]:
-                        reefPose3dToPublish.append(pose3dReefValues[reefSection][index])
+                        reefPose3dToPublish.append(pose3dCoralValues[reefSection][index])
                     
             pose3dPublisher.set(reefPose3dToPublish)
                              
