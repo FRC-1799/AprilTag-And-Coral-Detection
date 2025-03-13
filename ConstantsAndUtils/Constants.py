@@ -2,7 +2,7 @@ from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d,
 import math
 
 class PhotonLibConstants:
-    shouldTestAprilTags = True
+    shouldTestAprilTags = False
     APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0"
     APRIL_TAG_BACK_CAMERA_NAME = "AprilTag1"
     POSE_AMBIGUITY_TOLERANCE = 0.20
@@ -47,20 +47,20 @@ class PhotonLibConstants:
     BLUE_APRIL_TAG_REEF_LOCATIONS = {17: (0, 1), 18: (2, 3), 19: (4, 5), 20: (6, 7), 21: (8, 9), 22: (10, 11)}
 
 class CoralAndAlgaeCameraConstants:
-    shouldTestCoral = False
+    shouldTestCoral = True
     shouldTestAlgae = False
     robotReal = False
     coralCameraHorizontalAngleRad = math.radians(54.06)
     coralCameraVerticalAngleRad = math.radians(41.91)
-    horizontalPixels = 640
-    verticalPixels = 384
+    horizontalPixels = 1080 
+    verticalPixels = 720
     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
     ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(0.174, -0.249, 0.9305, Rotation3d(0, 0, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
 
     CORAL_CAMERA_NAME = "ArducamCoral"
     cameraPosition = (2.513, 3.997, 0.72)
-    vectorLengthToExtend = 70 # m
+    vectorLengthToExtend = 100 # m
     vectorDistanceBetweenExtensions = 2
     radius = 0.1524
     confidenceTolerance = 0.60

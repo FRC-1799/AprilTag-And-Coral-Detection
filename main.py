@@ -71,7 +71,7 @@ def main():
             
             for coralSection in reef:
                 coralLevelBoolVals.append(coralSection[level])
-                if coralSection[level]:
+                if coralSection[level] and pose3dCoralValues[reef.index(coralSection)][level] != None:
                     coralPose3dSeen.append(pose3dCoralValues[reef.index(coralSection)][level])
             publisher.set(coralLevelBoolVals) 
         
@@ -83,7 +83,7 @@ def main():
             
             for algaeSection in reef:
                 algaeLevelBoolVals.append(algaeSection[level])
-                if algaeSection[level]:
+                if algaeSection[level] and pose3dAlgaeValues[reef.index(algaeSection)][level] != None:
                     algaePose3dSeen.append(pose3dAlgaeValues[reef.index(algaeSection)][level])
                     
             publisher.set(algaeLevelBoolVals) 
@@ -209,7 +209,7 @@ def main():
 
         # Only used for testing just coral
         if not Constants.PhotonLibConstants.shouldTestAprilTags:
-            robotPosition = Pose3d(Translation3d(0,0,0), Rotation3d(0,0,0))
+            robotPosition = Pose3d(Translation3d(2.55, 4.03, 0), Rotation3d(0,0,0))
             
         if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
             reefCameraConnectionPublisher.set(True)
