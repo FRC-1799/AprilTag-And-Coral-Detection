@@ -11,7 +11,7 @@ from wpilib import DriverStation
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-import pyudev
+#import pyudev
 
 def grab_past_reef(reefSubscribers) -> list[list]:
     """
@@ -34,11 +34,12 @@ def grab_past_reef(reefSubscribers) -> list[list]:
     return reef 
 
 def coralCameraIndex() -> int:
-    context = pyudev.Context()
-    device_file = "/dev/video{}".format(device)
-    device = pyudev.Devices.from_device_file(context, device_file)
-    info = { item[0] : item[1] for item in device.items()}
-    return info["ID_SERIAL_SHORT"]
+    return 0
+    # context = pyudev.Context()
+    # device_file = "/dev/video{}".format(device)
+    # device = pyudev.Devices.from_device_file(context, device_file)
+    # info = { item[0] : item[1] for item in device.items()}
+    # return info["ID_SERIAL_SHORT"]
 
 
 
@@ -98,7 +99,7 @@ def main():
         list[list] - List of all of the lists for the publishers and subscribers
         """
 
-        reefTable = visionTable.getTable("ReefLocationTable")
+        reefTable = visionTable.getSubTable("ReefLocationTable")
         reefL1Topic = reefTable.getBooleanArrayTopic("ReefL1")
         reefL2Topic = reefTable.getBooleanArrayTopic("ReefL2")
         reefL3Topic = reefTable.getBooleanArrayTopic("ReefL3")
@@ -155,6 +156,8 @@ def main():
 
     # Reef Publishers and Subscribers
     coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher = createReefPubSub(visionTable)
+    pitchYawTopic = inst.getStructArrayTopic("Pitch Yaw Line", Pose3d)
+    pitchYawPublisher = pitchYawTopic.publish()
 
     reefCameraConnectionTopic = inst.getBooleanTopic("ReefCameraConnection") # if the reef camera is connected
     reefCameraConnectionPublisher = reefCameraConnectionTopic.getEntry(True)
@@ -213,9 +216,11 @@ def main():
             reef = grab_past_reef(coralSubscribers)
             coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
             updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher)
+
+            pitchYawPublisher.set(coralCamera.allPositions)
                 
             for reefSection in range(len(reef)):
-                for index in range(len(reefSection)):
+                for index in range(len(reef[0])):
                     if reef[reefSection][index]:
                         reefPose3dToPublish.append(pose3dCoralValues[reefSection][index])
                     

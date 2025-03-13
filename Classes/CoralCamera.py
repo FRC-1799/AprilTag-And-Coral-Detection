@@ -22,6 +22,8 @@ class CoralCamera:
     def findCoralsAndAlgaesOnReef(self, reef: list[list[bool]], algae: list[list[bool]], reefHitboxes: list, algaeHitboxes: list, algaeNotSeenCounter: list, robotPosition):
         ret, frame = self.camera.read()
 
+        self.allPositions = []
+
         if ret:
             frame = cv2.resize(frame, (self.screenWidth, self.screenHeight)) 
             results = self.model(frame)
@@ -46,22 +48,24 @@ class CoralCamera:
                             centerPitch = CoralAndAlgaeCameraConstants.reefCameraVerticalAnglePerPixel * (self.screenHeight / 2) + math.radians(10)
 
                             # Adjusts the pitch and yaw so that its center (0, 0) is in the middle of the camera lens
-                            coralYaw = coralYaw - centerYaw
-                            coralPitch = -(coralPitch - centerPitch)
+                            coralYaw = -(coralYaw - centerYaw)
+                            coralPitch = (coralPitch - centerPitch)
 
                             vectorOfCoral = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION), coralPitch, coralYaw)
 
                             # Loops again for a certain increment across the line, and the increment acts as the x value for the equation
-                            for increment in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
-                                positionLocation = vectorOfCoral.getPoseAtStep(increment)
+                            for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
+                                length = length * 0.05
+                                positionLocation = vectorOfCoral.getPoseAtStep(length)
+                                self.allPositions.append(positionLocation)
                                 if vectorAlreadyCollided:
                                     break
                                 
-                                for hitboxSection in len(reefHitboxes):
-                                    for hitbox in len(hitboxSection):
+                                for hitboxSection in range(len(reefHitboxes)):
+                                    for hitbox in range(len(reefHitboxes[0])):
 
                                         # If the Pose3d is colliding with the hitbox, we know which level it is on, so we set that level to true
-                                        if hitbox.colidePose3d(positionLocation):
+                                        if reefHitboxes[hitboxSection][hitbox].colidePose3d(positionLocation):
                                             reef[hitboxSection][hitbox] = True
                                             vectorAlreadyCollided = True
                                             break
@@ -89,13 +93,13 @@ class CoralCamera:
                             centerPitch = CoralAndAlgaeCameraConstants.reefCameraVerticalAnglePerPixel * (self.screenHeight / 2)
 
                             # Adjusts the pitch and yaw so that its center (0, 0) is in the middle of the camera lens
-                            algaeYaw = algaeYaw - centerYaw
-                            algaePitch = -(algaePitch - centerPitch)
+                            algaeYaw = -(algaeYaw - centerYaw)
+                            algaePitch = (algaePitch - centerPitch)
 
                             vectorOfAlgae = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION), algaePitch, algaeYaw)
 
-                            for increment in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
-                                positionLocation = vectorOfAlgae.getPoseAtStep(increment)
+                            for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
+                                positionLocation = vectorOfAlgae.getPoseAtStep(length)
                                 if vectorAlreadyCollided:
                                     break
                                 
