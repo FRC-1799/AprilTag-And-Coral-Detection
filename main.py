@@ -13,7 +13,7 @@ from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
 #import pyudev
 
-def grab_past_reef(reefSubscribers) -> list[list]:
+def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     """
     Grabs the past value of the reef
     
@@ -25,13 +25,21 @@ def grab_past_reef(reefSubscribers) -> list[list]:
     """
 
     defaultValue = [False for _ in range(12)]
-    reef = [[] for _ in range(12)]
+    reefCoral = [[] for _ in range(12)]
     for subscriber in reefSubscribers:
         reefLevelBools = subscriber.get(defaultValue)
-        for i, level in enumerate(reef):
+        for i, level in enumerate(reefCoral):
             level.append(reefLevelBools[i])
             
-    return reef 
+    defaultAlgaeValue = [False for _ in range(6)]
+    reefAlgae = [[] for _ in range(6)]
+    for subscriber in algaeSubscribers:
+        reefLevelBools = subscriber.get(defaultAlgaeValue)
+        for i, level in enumerate(reefAlgae):
+            level.append(reefLevelBools[i])
+
+            
+    return reefCoral, reefAlgae 
 
 def coralCameraIndex() -> int:
     return 0
@@ -99,20 +107,25 @@ def main():
         list[list] - List of all of the lists for the publishers and subscribers
         """
 
-        reefTable = visionTable.getSubTable("ReefLocationTable")
-        reefL1Topic = reefTable.getBooleanArrayTopic("ReefL1")
-        reefL2Topic = reefTable.getBooleanArrayTopic("ReefL2")
-        reefL3Topic = reefTable.getBooleanArrayTopic("ReefL3")
-        reefL4Topic = reefTable.getBooleanArrayTopic("ReefL4")
-        algae1Topic = reefTable.getBooleanArrayTopic("Algae1")
-        algae2Topic = reefTable.getBooleanArrayTopic("Algae2")
+        coralTable = visionTable.getSubTable("CoralPositions")
+        algaeTable = visionTable.getSubTable("ReefPositions")
+        
+        defaultReef = [False for _ in range(12)]
+        defaultAlgae = [False for _ in range(6)]
+
+        reefL1Topic = coralTable.getBooleanArrayTopic("ReefL1")
+        reefL2Topic = coralTable.getBooleanArrayTopic("ReefL2")
+        reefL3Topic = coralTable.getBooleanArrayTopic("ReefL3")
+        reefL4Topic = coralTable.getBooleanArrayTopic("ReefL4")
+        algae1Topic = algaeTable.getBooleanArrayTopic("Algae1")
+        algae2Topic = algaeTable.getBooleanArrayTopic("Algae2")
         coralSubscribers = [reefL1Topic.subscribe(defaultReef), reefL2Topic.subscribe(defaultReef), reefL3Topic.subscribe(defaultReef), reefL4Topic.subscribe(defaultReef)] 
         coralPublishers = [reefL1Topic.publish(), reefL2Topic.publish(), reefL3Topic.publish(), reefL4Topic.publish()]
         algaeSubscribers = [algae1Topic.subscribe(defaultAlgae), algae2Topic.subscribe(defaultAlgae)]
         algaePublishers = [algae1Topic.publish(), algae2Topic.publish()]
-        coralValuesSeenTopic = reefTable.getStructArrayTopic("CoralSeen",Pose3d)
+        coralValuesSeenTopic = coralTable.getStructArrayTopic("CoralSeen",Pose3d)
         coralValuesSeenPublisher = coralValuesSeenTopic.publish()
-        algaeValuesSeenTopic = reefTable.getStructArrayTopic("AlgaeSeen", Pose3d)
+        algaeValuesSeenTopic = algaeTable.getStructArrayTopic("AlgaeSeen", Pose3d)
         algaeValuesSeenPublisher = algaeValuesSeenTopic.publish()
 
 
@@ -130,8 +143,6 @@ def main():
     # Reef Values
     reef = [[False for _ in range(4)] for _ in range(12)]
     algae = [[False for _ in range(2)] for _ in range(12)]
-    defaultReef = [False for _ in range(4)] # Used for subscribing
-    defaultAlgae = [False for _ in range(2)]
     algaeNotSeenCounterList = [[0 for _ in range(2)] for _ in range(12)]
 
 
@@ -213,7 +224,7 @@ def main():
             
         if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
             reefCameraConnectionPublisher.set(True)
-            reef = grab_past_reef(coralSubscribers)
+            reef, algae = grab_past_reef(coralSubscribers, algaeSubscribers)
             coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
             updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher)
 
