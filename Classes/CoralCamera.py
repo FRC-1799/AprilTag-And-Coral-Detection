@@ -17,14 +17,15 @@ class CoralCamera:
         self.model = YOLO(modelPath)
         self.screenWidth = CoralAndAlgaeCameraConstants.horizontalPixels
         self.screenHeight = CoralAndAlgaeCameraConstants.verticalPixels
-        self.camera = cv2.VideoCapture(cameraIndex)
+        self.camera = cv2.VideoCapture(self.cameraIndex)
 
     def findCoralsAndAlgaesOnReef(self, reef: list[list[bool]], algae: list[list[bool]], reefHitboxes: list, algaeHitboxes: list, algaeNotSeenCounter: list, robotPosition):
-        ret, frame = self.camera.read()
+        readSuccess, frame = self.camera.read()
+        print(readSuccess, frame)
 
         self.allPositions = []
 
-        if ret:
+        if readSuccess:
             frame = cv2.resize(frame, (self.screenWidth, self.screenHeight)) 
             results = self.model(frame)
             vectorAlreadyCollided = False
