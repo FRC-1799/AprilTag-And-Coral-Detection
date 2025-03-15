@@ -156,6 +156,8 @@ def main():
     robotFrontPosePublisher = robotFrontPoseTopic.publish()
     robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
     robotBackPosePublisher = robotBackPoseTopic.publish()
+    odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose3d)
+    odometryRobotPoseSubscriber = odometryRobotPoseTopic.subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
     aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
     aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
     aprilTagFrontCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampFront")

@@ -12,8 +12,8 @@ class PhotonLibConstants:
     REEF_Y_TOLERANCE = 1
     
     # Camera Transformation    
-    ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(0.165, -0.249, 0.5245, Rotation3d(0, 0, 0)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
-    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-0.339, -0.204, 0.4745, Rotation3d(0, 0, 180)) # Back camera. This one is for april tags. ID 1
+    ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(-3.174, -10.256, -21.724, Rotation3d(0, 0, 0)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
+    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-13.353, -10.568, 0.4745, Rotation3d(0, 0, 180)) # Back camera. This one is for april tags. ID 1
 
     POSE3D_REEF_LOCATIONS = [
         [Pose3d(4.75, 3.25, 0.45, Rotation3d()), Pose3d(4.75, 3.25, 0.8, Rotation3d()), Pose3d(4.75, 3.25, 1.2, Rotation3d()), Pose3d(4.75, 3.25, 1.825498, Rotation3d())],
@@ -56,11 +56,11 @@ class CoralAndAlgaeCameraConstants:
     verticalPixels = 720
     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
-    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(0.174, -0.249, 0.9305, Rotation3d(0, 0, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
+    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(-4.644, -10.457, -39.419, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
 
     CORAL_CAMERA_NAME = "ArducamCoral"
     cameraPosition = (2.513, 3.997, 0.72)
-    vectorLengthToExtend = 100 # m
+    vectorLengthToExtend = 100 # m 
     vectorDistanceBetweenExtensions = 2
     radius = 0.1524
     confidenceTolerance = 0.60
