@@ -11,7 +11,7 @@ from wpilib import DriverStation
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-#import pyudev
+import pyudev
 
 def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     """
@@ -224,7 +224,7 @@ def main():
         if not Constants.PhotonLibConstants.shouldTestAprilTags:
             robotPosition = Pose3d(Translation3d(2.55, 4.03, 0), Rotation3d(0,0,0))
             
-        if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
+        if robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
             reefCameraConnectionPublisher.set(True)
             reef, algae = grab_past_reef(coralSubscribers, algaeSubscribers)
             coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)

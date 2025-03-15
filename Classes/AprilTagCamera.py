@@ -24,7 +24,7 @@ class AprilTagCamera:
         self.cameraName = cameraName
         self.camera = PhotonCamera(self.cameraName)
         self.estimator = PhotonPoseEstimator(
-            apriltag.AprilTagFieldLayout.loadField(apriltag.AprilTagField.k2024Crescendo),
+            apriltag.AprilTagFieldLayout.loadField(apriltag.AprilTagField.k2025ReefscapeWelded),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.camera,
             cameraTransformation,

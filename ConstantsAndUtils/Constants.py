@@ -2,8 +2,8 @@ from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d,
 import math
 
 class PhotonLibConstants:
-    shouldTestAprilTags = False
-    APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0"
+    shouldTestAprilTags = True
+    APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0 (1)"
     APRIL_TAG_BACK_CAMERA_NAME = "AprilTag1"
     POSE_AMBIGUITY_TOLERANCE = 0.20
     REEF_WIDTH = 0.25
@@ -12,8 +12,8 @@ class PhotonLibConstants:
     REEF_Y_TOLERANCE = 1
     
     # Camera Transformation    
-    ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(-3.174/ 39.37, -10.256/ 39.37, -21.724/ 39.37, Rotation3d(0, 0, 0)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
-    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-13.353/ 39.37, -10.568/ 39.37, 0.4745/ 39.37, Rotation3d(0, 0, 180)) # Back camera. This one is for april tags. ID 1
+    ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(-3.174/ 39.37, -10.256/ 39.37, 21.724/ 39.37, Rotation3d(0, 0, 0)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
+    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-13.353/ 39.37, -10.568/ 39.37, 24.467/ 39.37, Rotation3d(0, 0, 180)) # Back camera. This one is for april tags. ID 1
 
     POSE3D_REEF_LOCATIONS = [
         [Pose3d(4.75, 3.25, 0.45, Rotation3d()), Pose3d(4.75, 3.25, 0.8, Rotation3d()), Pose3d(4.75, 3.25, 1.2, Rotation3d()), Pose3d(4.75, 3.25, 1.825498, Rotation3d())],
@@ -48,7 +48,7 @@ class PhotonLibConstants:
 
 class CoralAndAlgaeCameraConstants:
     shouldTestCoral = True
-    shouldTestAlgae = False
+    shouldTestAlgae = True
     robotReal = False
     coralCameraHorizontalAngleRad = math.radians(54.06)
     coralCameraVerticalAngleRad = math.radians(41.91)
@@ -56,7 +56,7 @@ class CoralAndAlgaeCameraConstants:
     verticalPixels = 720
     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
-    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(-4.644/ 39.37, -10.457/ 39.37, -39.419/ 39.37, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
+    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(-4.644/ 39.37, -10.457/ 39.37, 39.419/ 39.37, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
 
     CORAL_CAMERA_NAME = "ArducamCoral"
     cameraPosition = (2.513, 3.997, 0.72)
