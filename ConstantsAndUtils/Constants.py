@@ -46,23 +46,23 @@ class PhotonLibConstants:
     RED_APRIL_TAG_REEF_LOCATIONS = {6: (0, 1), 7: (2, 3), 8: (4, 5), 9: (6, 7), 10: (8, 9), 11: (10, 11)}
     BLUE_APRIL_TAG_REEF_LOCATIONS = {17: (0, 1), 18: (2, 3), 19: (4, 5), 20: (6, 7), 21: (8, 9), 22: (10, 11)}
 
-class CoralAndAlgaeCameraConstants:
-    shouldTestCoral = True
-    shouldTestAlgae = False
-    robotReal = False
-    coralCameraHorizontalAngleRad = math.radians(54.06)
-    coralCameraVerticalAngleRad = math.radians(41.91)
-    horizontalPixels = 1080 
-    verticalPixels = 720
-    reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
-    reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
-    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(4.644/ 39.37, 10.457/ 39.37, 39.419/ 39.37, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
+# class CoralAndAlgaeCameraConstants:
+#     shouldTestCoral = True
+#     shouldTestAlgae = False
+#     robotReal = False
+#     coralCameraHorizontalAngleRad = math.radians(54.06)
+#     coralCameraVerticalAngleRad = math.radians(41.91)
+#     horizontalPixels = 1080 
+#     verticalPixels = 720
+#     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
+#     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
+#     ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(4.644/ 39.37, 10.457/ 39.37, 39.419/ 39.37, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
 
-    CORAL_CAMERA_NAME = "Reef2"
-    cameraPosition = (2.513, 3.997, 0.72)
-    vectorLengthToExtend = 100 # m 
-    vectorDistanceBetweenExtensions = 2
-    radius = 0.1524
-    confidenceTolerance = 0.60
-    algaeViewedTolerance = 100 # Times we can not see the algae before we mark it as false
+#     CORAL_CAMERA_NAME = "Reef2"
+#     cameraPosition = (2.513, 3.997, 0.72)
+#     vectorLengthToExtend = 100 # m 
+#     vectorDistanceBetweenExtensions = 2
+#     radius = 0.1524
+#     confidenceTolerance = 0.60
+#     algaeViewedTolerance = 100 # Times we can not see the algae before we mark it as false
 
