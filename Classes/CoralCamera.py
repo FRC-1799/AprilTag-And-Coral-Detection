@@ -21,7 +21,6 @@ class CoralCamera:
 
     def findCoralsAndAlgaesOnReef(self, reef: list[list[bool]], algae: list[list[bool]], reefHitboxes: list, algaeHitboxes: list, algaeNotSeenCounter: list, robotPosition):
         readSuccess, frame = self.camera.read()
-        print(readSuccess, frame)
 
         self.allPositions = []
 

@@ -2,11 +2,11 @@ import time
 import ntcore
 import cv2
 import wpimath
-from ConstantsAndUtils.Constants import PhotonLibConstants, CoralAndAlgaeCameraConstants
-from Classes.AprilTagCamera import *
-from wpimath.geometry import Pose3d, Rotation3d
+from ConstantsAndUtils.Constants import CoralAndAlgaeCameraConstants
+from wpimath.geometry import Pose3d, Rotation3d, Translation3d
 import keyboard
 import Classes.CoralCamera as CoralCamera
+import ConstantsAndUtils.Constants as Constants
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
@@ -43,7 +43,6 @@ def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     return reefCoral, reefAlgae 
 
 def coralCameraIndex(device) -> None | int:
-    
     context = pyudev.Context()
     device_file = "/dev/video{}".format(device)
     deviceClass = pyudev.Devices.from_device_file(context, device_file)
@@ -57,20 +56,20 @@ def coralCameraIndex(device) -> None | int:
 
     
 def main():
-    def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
-        """
-        Calculates robot position and adds it to the queue
+    # def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
+    #     """
+    #     Calculates robot position and adds it to the queue
 
-        Returns:
-        tuple[Pose3d, float] - the position of the robot as well as the timestamp this position was 
-        obtained at
-        """
-        robotPosition, timestamp = camera.get_estimated_global_pose()
+    #     Returns:
+    #     tuple[Pose3d, float] - the position of the robot as well as the timestamp this position was 
+    #     obtained at
+    #     """
+    #     robotPosition, timestamp = camera.get_estimated_global_pose()
         
-        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
-            robotPosition=robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
+    #     if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+    #         robotPosition=robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
         
-        return robotPosition, timestamp
+    #     return robotPosition, timestamp
     
     def updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher):
         """
@@ -134,12 +133,11 @@ def main():
 
 
         return coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher
-    print("test2")
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
     inst.setServerTeam(1799)
     if Constants.CoralAndAlgaeCameraConstants.robotReal:
-        inst.startClient4("Vision")
+        inst.startClient4("ReefIndexer")
     else:
         inst.startServer()
 
@@ -149,27 +147,26 @@ def main():
     algae = [[False for _ in range(2)] for _ in range(12)]
     algaeNotSeenCounterList = [[0 for _ in range(2)] for _ in range(12)]
 
-    print("test1")
     # Create an instance of the AprilTag camera
-    aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION)
-    aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION)
+    # aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION)
+    # aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION)
 
     # Grabs the Robot's topic and publisher
     visionTable = inst.getTable("Vision")
-    robotFrontPoseTopic = visionTable.getStructTopic("FrontRobotPose", Pose3d)
-    robotFrontPosePublisher = robotFrontPoseTopic.publish()
-    robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
-    robotBackPosePublisher = robotBackPoseTopic.publish()
+    # robotFrontPoseTopic = visionTable.getStructTopic("FrontRobotPose", Pose3d)
+    # robotFrontPosePublisher = robotFrontPoseTopic.publish()
+    # robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
+    # robotBackPosePublisher = robotBackPoseTopic.publish()
     odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose3d)
     odometryRobotPoseSubscriber = odometryRobotPoseTopic.subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
-    aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
-    aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
-    aprilTagFrontCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampFront")
-    aprilTagFrontCameraTimestampPublisher = aprilTagFrontCameraTimestampTopic.publish()
-    aprilTagBackCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampBack")
-    aprilTagBackCameraTimestampPublisher = aprilTagBackCameraTimestampTopic.publish()
+    # aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
+    # aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
+    # aprilTagFrontCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampFront")
+    # aprilTagFrontCameraTimestampPublisher = aprilTagFrontCameraTimestampTopic.publish()
+    # aprilTagBackCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampBack")
+    # aprilTagBackCameraTimestampPublisher = aprilTagBackCameraTimestampTopic.publish()
 
-    robotPositionFront = None
+    robotPosition = None
 
     # Reef Publishers and Subscribers
     coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher = createReefPubSub(visionTable)
@@ -181,14 +178,15 @@ def main():
 
     # Reef Pose3D for debugging purposes
     reefPose3dTable = inst.getTable("reefPose3dTable")
-    pose3dTableTopic = reefPose3dTable.getStructArrayTopic("pose", Pose3d)
-    pose3dPublisher = pose3dTableTopic.publish()
-    reefPose3dToPublish = []
+    l1TestTableTopic = reefPose3dTable.getStructArrayTopic("poseL1", Pose3d)
+    l2TestTableTopic = reefPose3dTable.getStructArrayTopic("poseL2", Pose3d)
+    l3TestTableTopic = reefPose3dTable.getStructArrayTopic("poseL3", Pose3d)
+    l4TestTableTopic = reefPose3dTable.getStructArrayTopic("poseL4", Pose3d)
 
-    print("test")
-
+    # reefPose3dToPublish = []
+    
     deviceNumber = 0
-    for deviceIndex in range(1,4):
+    for deviceIndex in range(4):
         deviceNumber = coralCameraIndex(deviceIndex)
         if deviceNumber != None:
             break
@@ -197,9 +195,27 @@ def main():
     coralCamera = CoralCamera.CoralCamera(deviceNumber)
     reefCameraConnectionPublisher.set(coralCamera.camera.isOpened())
     SmartDashboard.putBoolean("wasConnected", coralCamera.camera.isOpened())
+
     
     coralHitboxes, pose3dCoralValues = hitbox.makeCoralHitboxes()
     algaeHitboxes, pose3dAlgaeValues = hitbox.makeAlgaeHitboxes()
+
+    # print(pose3dCoralValues)
+
+    L1Publisher = l1TestTableTopic.publish()
+    L2Publisher = l2TestTableTopic.publish()
+    L3Publisher = l3TestTableTopic.publish()
+    L4Publisher = l4TestTableTopic.publish()
+
+    print(pose3dCoralValues[0])
+    # print(pose3dCoralValues[1])
+    # print(pose3dCoralValues[2])
+    # print(pose3dCoralValues[3])
+    L1Publisher.set(pose3dCoralValues[0])
+    L2Publisher.set(pose3dCoralValues[1])
+    L3Publisher.set(pose3dCoralValues[2])
+    L4Publisher.set(pose3dCoralValues[3])
+
     
     while True:
         if keyboard.is_pressed("q"):
@@ -207,58 +223,62 @@ def main():
             cv2.destroyAllWindows()
             break
         
-        reefCameraConnectionPublisher.set(coralCamera.camera.isOpened())
         # if not coralCamera.camera.isOpened():
         #     coralCamera = None
         #     time.sleep(10)
         #     coralCamera = CoralCamera.CoralCamera(deviceNumber)
 
 
-        if Constants.PhotonLibConstants.shouldTestAprilTags:
+        # if Constants.PhotonLibConstants.shouldTestAprilTags:
         
-            if aprilTagCameraFront.isConnected():
-                aprilTagCameraConnectionPublisher.set(True)
-                aprilTagsFront = aprilTagCameraFront.get_tags()
-                if aprilTagsFront:
-                    robotPositionFront, timestamp = fetchRobotPosition(aprilTagCameraFront)
-                    if robotPositionFront:
-                        robotFrontPosePublisher.set(robotPositionFront.estimatedPose)
-                        aprilTagFrontCameraTimestampPublisher.set(timestamp)
+        #     if aprilTagCameraFront.isConnected():
+        #         aprilTagCameraConnectionPublisher.set(True)
+        #         aprilTagsFront = aprilTagCameraFront.get_tags()
+        #         if aprilTagsFront:
+        #             robotPositionFront, timestamp = fetchRobotPosition(aprilTagCameraFront)
+        #             if robotPositionFront:
+        #                 robotFrontPosePublisher.set(robotPositionFront.estimatedPose)
+        #                 aprilTagFrontCameraTimestampPublisher.set(timestamp)
                         
-                    else:
-                        robotFrontPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+        #             else:
+        #                 robotFrontPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
                         
-            if aprilTagCameraBack.isConnected():
-                aprilTagCameraConnectionPublisher.set(True)
-                aprilTagsBack = aprilTagCameraBack.get_tags()
-                if aprilTagsBack:
-                    robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
-                    if robotPositionBack:
-                        robotBackPosePublisher.set(robotPositionBack.estimatedPose)
-                        aprilTagBackCameraTimestampPublisher.set(timestamp)
+        #     if aprilTagCameraBack.isConnected():
+        #         aprilTagCameraConnectionPublisher.set(True)
+        #         aprilTagsBack = aprilTagCameraBack.get_tags()
+        #         if aprilTagsBack:
+        #             robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
+        #             if robotPositionBack:
+        #                 robotBackPosePublisher.set(robotPositionBack.estimatedPose)
+        #                 aprilTagBackCameraTimestampPublisher.set(timestamp)
                         
-                    else:
-                        robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+        #             else:
+        #                 robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
                        
+        reefCameraConnectionPublisher.set(coralCamera.camera.isOpened())
+
 
         # Only used for testing just coral
-        if not Constants.PhotonLibConstants.shouldTestAprilTags:
-            robotPosition = Pose3d(Translation3d(2.55, 4.03, 0), Rotation3d(0,0,0))
-        if robotPositionFront and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
+        if not Constants.CoralAndAlgaeCameraConstants.shouldTestAprilTags:
+            robotPosition = Pose3d(Translation3d(2.825, 4.363, 0), Rotation3d(0,0,0))
+        else:
+            robotPosition = odometryRobotPoseSubscriber.get().estimatedPose
+
+        if robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
             reef, algae = grab_past_reef(coralSubscribers, algaeSubscribers)
-            coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPositionFront.estimatedPose)
+            coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
             updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher)
 
             pitchYawPublisher.set(coralCamera.allPositions)
                 
-            for reefSection in range(len(reef)):
-                for index in range(len(reef[0])):
-                    if reef[reefSection][index]:
-                        reefPose3dToPublish.append(pose3dCoralValues[reefSection][index])
+            # for reefSection in range(len(reef)):
+            #     for index in range(len(reef[0])):
+            #         if reef[reefSection][index]:
+            #             reefPose3dToPublish.append(pose3dCoralValues[reefSection][index])
                     
-            pose3dPublisher.set(reefPose3dToPublish)
+            # pose3dPublisher.set(reefPose3dToPublish)
                              
-    time.sleep(0.01)
+    time.sleep(0.005)
             
 if __name__ == "__main__":
     main()
