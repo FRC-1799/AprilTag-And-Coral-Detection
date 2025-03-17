@@ -63,7 +63,7 @@ class hitbox:
         for i in range(12):
             for j in range(4):
                 transformedPose = blueStarts[i].transformBy(editTran[j])
-                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.radius)
+                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.coralRadius)
                 pose3dList[i][j] = transformedPose
             
         return blueHitboxes, pose3dList
@@ -92,7 +92,7 @@ class hitbox:
         for i in range(6):
             for j in range(2):
                 transformedPose = blueStarts[i].transformBy(editTran[j])
-                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.radius)
+                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.algaeRadius)
                 pose3dList[i][j] = transformedPose
             
         return blueHitboxes, pose3dList 

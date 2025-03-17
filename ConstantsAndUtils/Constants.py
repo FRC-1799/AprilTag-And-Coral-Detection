@@ -48,7 +48,7 @@ import math
 
 class CoralAndAlgaeCameraConstants:
     shouldTestCoral = True
-    shouldTestAlgae = False
+    shouldTestAlgae = True
     shouldTestAprilTags = False
     robotReal = False
     coralCameraHorizontalAngleRad = math.radians(54.06)
@@ -63,7 +63,10 @@ class CoralAndAlgaeCameraConstants:
     cameraPosition = (2.513, 3.997, 0.72)
     vectorLengthToExtend = 100 # m 
     vectorDistanceBetweenExtensions = 2
-    radius = 0.1524
-    confidenceTolerance = 0.75
+    coralRadius = 0.3
+    algaeRadius = 0.203
+    coralConfidenceTolerance = 0.75
+    algaeConfidenceTolerance = 0
+
     algaeViewedTolerance = 100 # Times we can not see the algae before we mark it as false
 

@@ -92,10 +92,10 @@ def main():
         for level, publisher in enumerate(algaePublishers):
             algaeLevelBoolVals = []
             
-            for algaeSection in reef:
+            for algaeSection in algae:
                 algaeLevelBoolVals.append(algaeSection[level])
-                if algaeSection[level] and pose3dAlgaeValues[reef.index(algaeSection)][level] != None:
-                    algaePose3dSeen.append(pose3dAlgaeValues[reef.index(algaeSection)][level])
+                if algaeSection[level] and pose3dAlgaeValues[algae.index(algaeSection)][level] != None:
+                    algaePose3dSeen.append(pose3dAlgaeValues[algae.index(algaeSection)][level])
                     
             publisher.set(algaeLevelBoolVals) 
             
@@ -133,6 +133,8 @@ def main():
 
 
         return coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher
+    
+    
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
     inst.setServerTeam(1799)
@@ -207,7 +209,6 @@ def main():
     L3Publisher = l3TestTableTopic.publish()
     L4Publisher = l4TestTableTopic.publish()
 
-    print(pose3dCoralValues[0])
     # print(pose3dCoralValues[1])
     # print(pose3dCoralValues[2])
     # print(pose3dCoralValues[3])
@@ -218,10 +219,10 @@ def main():
 
     
     while True:
-        if keyboard.is_pressed("q"):
-            inst.stopServer()
-            cv2.destroyAllWindows()
-            break
+        # if keyboard.is_pressed("q"):
+        #     inst.stopServer()
+        #     cv2.destroyAllWindows()
+        #     break
         
         # if not coralCamera.camera.isOpened():
         #     coralCamera = None
@@ -260,7 +261,7 @@ def main():
 
         # Only used for testing just coral
         if not Constants.CoralAndAlgaeCameraConstants.shouldTestAprilTags:
-            robotPosition = Pose3d(Translation3d(2.825, 4.363, 0), Rotation3d(0,0,0))
+            robotPosition = Pose3d(Translation3d(2.55, 4, 0), Rotation3d(0,0,0))
         else:
             robotPosition = odometryRobotPoseSubscriber.get().estimatedPose
 
