@@ -215,8 +215,8 @@ class CoralCamera:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            cv2.imshow('heheh', frame)
-            cv2.waitKey(5)
+            # cv2.imshow('heheh', frame)
+            cv2.waitKey(1)
         else:
             coral, algaeOnFrame = [[False for _ in range(12)] for _ in range(4)], [[False for _ in range(6)] for _ in range(2)] 
         return coral, algaeOnFrame

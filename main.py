@@ -3,7 +3,7 @@ import ntcore
 import cv2
 import wpimath
 from ConstantsAndUtils.Constants import CoralAndAlgaeCameraConstants
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d
+from wpimath.geometry import Pose3d, Rotation3d, Translation3d, Pose2d
 import keyboard
 import Classes.CoralCamera as CoralCamera
 import ConstantsAndUtils.Constants as Constants
@@ -43,7 +43,7 @@ def coralCameraIndex(device) -> None | int:
     device_file = "/dev/video{}".format(device)
     deviceClass = pyudev.Devices.from_device_file(context, device_file)
     info = { item[0] : item[1] for item in deviceClass.items()}
-    print(info["ID_MODEL"])
+    # print(info["ID_MODEL"])
     if info["ID_MODEL"] == Constants.CoralAndAlgaeCameraConstants.CORAL_CAMERA_NAME:
         return device
     else:
@@ -160,7 +160,7 @@ def main():
     # robotFrontPosePublisher = robotFrontPoseTopic.publish()
     # robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
     # robotBackPosePublisher = robotBackPoseTopic.publish()
-    odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose3d)
+    odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose2d)
     odometryRobotPoseSubscriber = odometryRobotPoseTopic.subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
     # aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
     # aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
@@ -194,7 +194,7 @@ def main():
         if deviceNumber != None:
             break
 
-    print(deviceNumber)
+    # print(deviceNumber)
     coralCamera = CoralCamera.CoralCamera(deviceNumber)
     reefCameraConnectionPublisher.set(coralCamera.camera.isOpened())
     SmartDashboard.putBoolean("wasConnected", coralCamera.camera.isOpened())
@@ -264,9 +264,10 @@ def main():
         if not Constants.CoralAndAlgaeCameraConstants.shouldTestAprilTags:
             robotPosition = Pose3d(Translation3d(2.55, 4, 0), Rotation3d(0,0,0))
         else:
-            robotPosition = odometryRobotPoseSubscriber.get().estimatedPose
+            robotPosition = odometryRobotPoseSubscriber.get()
 
-        if robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
+        if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
+            reefCameraConnectionPublisher.set(True)
             coral, algaeNetworkTables = grab_past_reef(coralSubscribers, algaeSubscribers)
             coral, algaeOnFrame = coralCamera.findCoralsAndAlgaesOnReef(coral, coralHitboxes, algaeHitboxes, robotPosition)
             algaeToPublish = coralCamera.updateAlgaePositions(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotPosition)
@@ -280,7 +281,9 @@ def main():
             #             reefPose3dToPublish.append(pose3dCoralValues[reefSection][index])
                     
             # pose3dPublisher.set(reefPose3dToPublish)
-                             
+
+        if not coralCamera.camera.isOpened():
+            reefCameraConnectionPublisher.set(False)        
     time.sleep(0.005)
             
 if __name__ == "__main__":
