@@ -2,14 +2,12 @@ import time
 import ntcore
 import cv2
 import wpimath
-from ConstantsAndUtils.Constants import PhotonLibConstants, CoralAndAlgaeCameraConstants
+from ConstantsAndUtils.Constants import PhotonLibConstants
 from Classes.AprilTagCamera import *
 from wpimath.geometry import Pose3d, Rotation3d
 import keyboard
-import Classes.CoralCamera as CoralCamera
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
-from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
 import pyudev
 import os
@@ -141,8 +139,8 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServerTeam(1799)
-    if Constants.CoralAndAlgaeCameraConstants.robotReal:
+    inst.setServer("10.17.99.1")
+    if Constants.PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
         inst.startServer()
@@ -165,8 +163,10 @@ def main():
     robotBackPosePublisher = robotBackPoseTopic.publish()
     # odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose3d)
     # odometryRobotPoseSubscriber = odometryRobotPoseTopic.subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
-    aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
-    aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
+    aprilTagFrontCameraConnectionTopic = visionTable.getBooleanTopic("FrontCameraConnection")
+    aprilTagFrontCameraConnectionPublisher = aprilTagFrontCameraConnectionTopic.publish()
+    aprilTagBackCameraConnectionTopic = visionTable.getBooleanTopic("BackCameraConnection")
+    aprilTagBackCameraConnectionPublisher = aprilTagBackCameraConnectionTopic.publish()
     aprilTagFrontCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampFront")
     aprilTagFrontCameraTimestampPublisher = aprilTagFrontCameraTimestampTopic.publish()
     aprilTagBackCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampBack")
@@ -206,8 +206,11 @@ def main():
     
     while True:
         if keyboard.is_pressed("q"):
-            inst.stopServer()
+            aprilTagFrontCameraConnectionPublisher.set(False)
+            aprilTagBackCameraConnectionPublisher.set(False)
+            inst.disconnect()
             cv2.destroyAllWindows()
+            
             break
         
         #reefCameraConnectionPublisher.set(coralCamera.camera.isOpened())
@@ -220,7 +223,7 @@ def main():
         if Constants.PhotonLibConstants.shouldTestAprilTags:
         
             if aprilTagCameraFront.isConnected():
-                aprilTagCameraConnectionPublisher.set(True)
+                aprilTagFrontCameraConnectionPublisher.set(True)
                 aprilTagsFront = aprilTagCameraFront.get_tags()
                 if aprilTagsFront:
                     robotPositionFront, timestamp = fetchRobotPosition(aprilTagCameraFront)
@@ -232,7 +235,7 @@ def main():
                         robotFrontPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
                         
             if aprilTagCameraBack.isConnected():
-                aprilTagCameraConnectionPublisher.set(True)
+                aprilTagBackCameraConnectionPublisher.set(True)
                 aprilTagsBack = aprilTagCameraBack.get_tags()
                 if aprilTagsBack:
                     robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
