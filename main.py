@@ -11,7 +11,7 @@ from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-import pyudev
+#import pyudev
 import os
 
 def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
@@ -26,23 +26,20 @@ def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     """
 
     defaultValue = [False for _ in range(12)]
-    reefCoral = [[] for _ in range(12)]
-    for subscriber in reefSubscribers:
-        reefLevelBools = subscriber.get(defaultValue)
-        for i, level in enumerate(reefCoral):
-            level.append(reefLevelBools[i])
+    reefCoral = [[] for _ in range(4)]
+    for level, subscriber in enumerate(reefSubscribers):
+        reefCoral[level] = subscriber.get(defaultValue)
             
     defaultAlgaeValue = [False for _ in range(6)]
-    reefAlgae = [[] for _ in range(6)]
-    for subscriber in algaeSubscribers:
-        reefLevelBools = subscriber.get(defaultAlgaeValue)
-        for i, level in enumerate(reefAlgae):
-            level.append(reefLevelBools[i])
+    reefAlgae = [[] for _ in range(2)]
+    for level, subscriber in enumerate(algaeSubscribers):
+        reefAlgae[level] = subscriber.get(defaultAlgaeValue)
 
             
     return reefCoral, reefAlgae 
 
 def coralCameraIndex(device) -> None | int:
+    return 0
     context = pyudev.Context()
     device_file = "/dev/video{}".format(device)
     deviceClass = pyudev.Devices.from_device_file(context, device_file)
@@ -71,33 +68,31 @@ def main():
         
     #     return robotPosition, timestamp
     
-    def updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher):
+    def updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coralTotalList, algaeTotalList, ):
         """
         Updates the reef's values on Network Tables
         """
 
         coralPose3dSeen = []
-        for level, publisher in enumerate(coralPublishers):
-            coralLevelBoolVals = []
+        for publisher in coralPublishers:
             
-            for coralSection in reef:
-                coralLevelBoolVals.append(coralSection[level])
-                if coralSection[level] and pose3dCoralValues[reef.index(coralSection)][level] != None:
-                    coralPose3dSeen.append(pose3dCoralValues[reef.index(coralSection)][level])
-            publisher.set(coralLevelBoolVals) 
+            for coralLevel in coralTotalList:
+                publisher.set(coralLevel)
+                for coral in coralLevel:
+                    if coral:
+                        coralPose3dSeen.append(pose3dCoralValues[coralTotalList.index(coralLevel)][coralLevel.index(coral)])
+            
         
         coralValuesSeenPublisher.set(coralPose3dSeen)
         
         algaePose3dSeen = []
-        for level, publisher in enumerate(algaePublishers):
-            algaeLevelBoolVals = []
+        for algaeLevel, publisher in zip(algaeTotalList, algaePublishers):
+            publisher.set(algaeLevel)
             
-            for algaeSection in algae:
-                algaeLevelBoolVals.append(algaeSection[level])
-                if algaeSection[level] and pose3dAlgaeValues[algae.index(algaeSection)][level] != None:
-                    algaePose3dSeen.append(pose3dAlgaeValues[algae.index(algaeSection)][level])
-                    
-            publisher.set(algaeLevelBoolVals) 
+            for algaeLevel in algaeTotalList:
+                for algae in algaeLevel:
+                    if algae:
+                        algaePose3dSeen.append(pose3dAlgaeValues[algaeTotalList.index(algaeLevel)][algaeLevel.index(algae)])
             
         algaeValuesSeenPublisher.set(algaePose3dSeen)
 
@@ -132,6 +127,12 @@ def main():
         algaeValuesSeenPublisher = algaeValuesSeenTopic.publish()
 
 
+        for publisher in coralPublishers:
+            publisher.set([False for _ in range(12)]) 
+        
+        for publisher in algaePublishers:
+            publisher.set([False for _ in range(6)]) 
+
         return coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher
     
     
@@ -145,9 +146,9 @@ def main():
 
 
     # Reef Values
-    reef = [[False for _ in range(4)] for _ in range(12)]
-    algae = [[False for _ in range(2)] for _ in range(12)]
-    algaeNotSeenCounterList = [[0 for _ in range(2)] for _ in range(12)]
+    coral = [[False for _ in range(12)] for _ in range(4)]
+    algae = [[False for _ in range(6)] for _ in range(2)]
+    
 
     # Create an instance of the AprilTag camera
     # aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION)
@@ -219,10 +220,10 @@ def main():
 
     
     while True:
-        # if keyboard.is_pressed("q"):
-        #     inst.stopServer()
-        #     cv2.destroyAllWindows()
-        #     break
+        if keyboard.is_pressed("q"):
+            inst.stopServer()
+            cv2.destroyAllWindows()
+            break
         
         # if not coralCamera.camera.isOpened():
         #     coralCamera = None
@@ -266,9 +267,10 @@ def main():
             robotPosition = odometryRobotPoseSubscriber.get().estimatedPose
 
         if robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
-            reef, algae = grab_past_reef(coralSubscribers, algaeSubscribers)
-            coralCamera.findCoralsAndAlgaesOnReef(reef, algae, coralHitboxes, algaeHitboxes, algaeNotSeenCounterList, robotPosition)
-            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher)
+            coral, algae = grab_past_reef(coralSubscribers, algaeSubscribers)
+            coralCamera.findCoralsAndAlgaesOnReef(coral, coralHitboxes, algaeHitboxes, robotPosition)
+            coralCamera.updateAlgaePositions(algae, algaeHitboxes, robotPosition)
+            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coral, algae)
 
             pitchYawPublisher.set(coralCamera.allPositions)
                 

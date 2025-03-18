@@ -33,7 +33,7 @@ class hitbox:
     def makeCoralHitboxes()->list[list[Pose3d]]:
         
 
-        blueHitboxes = [[None, None, None, None] for _ in range(12)]
+        blueHitboxes = [[None for _ in range(12)] for _ in range(4)]
         
 
         # Translation2d of the reef's position on the field based on the origin
@@ -59,10 +59,10 @@ class hitbox:
             Transform3d(Translation3d(-0.3, 0, 1.78), Rotation3d.fromDegrees(0, 90, 0))
         ]
 
-        pose3dList = [[None for _ in range(4)] for _ in range(12)] # for testing where it thinks coral is
-        for i in range(12):
-            for j in range(4):
-                transformedPose = blueStarts[i].transformBy(editTran[j])
+        pose3dList = [[None for _ in range(12)] for _ in range(4)] # for testing where it thinks coral is
+        for i in range(4):
+            for j in range(12):
+                transformedPose = blueStarts[j].transformBy(editTran[i])
                 blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.coralRadius)
                 pose3dList[i][j] = transformedPose
             
@@ -71,7 +71,7 @@ class hitbox:
     @staticmethod
     def makeAlgaeHitboxes():
 
-        blueHitboxes = [[None, None] for _ in range(6)]
+        blueHitboxes = [[None for _ in range(6)] for _ in range(2)]
         blueStarts = [
             Pose3d(x=3.801, y=4.025, z=0, rotation=Rotation3d.fromDegrees(0, 0, 0)),    #A
             Pose3d(x=4.192, y=3.439, z=0, rotation=Rotation3d.fromDegrees(0, 0, 0)), #B
@@ -87,11 +87,11 @@ class hitbox:
             Transform3d(Translation3d(0, 0, 1.3), Rotation3d.fromDegrees(0, 0, 0))
         ]
 
-        pose3dList = [[None for _ in range(4)] for _ in range(12)] # for testing where it thinks algae is
+        pose3dList = [[None for _ in range(6)] for _ in range(2)] # for testing where it thinks algae is
 
-        for i in range(6):
-            for j in range(2):
-                transformedPose = blueStarts[i].transformBy(editTran[j])
+        for i in range(2):
+            for j in range(6):
+                transformedPose = blueStarts[j].transformBy(editTran[i])
                 blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.algaeRadius)
                 pose3dList[i][j] = transformedPose
             
