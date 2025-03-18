@@ -5,6 +5,8 @@ import math
 from Classes import Vector, Hitbox
 import os
 from wpimath.geometry import Pose3d
+import sys
+import contextlib
 
 class CoralCamera:
     """
@@ -19,7 +21,7 @@ class CoralCamera:
         self.screenWidth = CoralAndAlgaeCameraConstants.horizontalPixels
         self.screenHeight = CoralAndAlgaeCameraConstants.verticalPixels
         self.camera = cv2.VideoCapture(self.cameraIndex)
-        self.algaeNotSeenCounterList = [[6 for _ in range(2)] for _ in range(2)]
+        self.algaeNotSeenCounterList = [[0 for _ in range(6)] for _ in range(2)]
         self.vectorPoseIntersects = [[False for _ in range(6)] for _ in range(2)] # list of booleans that indicate if a vector has collided with an algae
 
     def get2ClosestAlgaeSections(self, algaeHitboxes: list[Hitbox.hitbox], robotPosition: Pose3d) -> tuple[int, int]:
@@ -49,10 +51,11 @@ class CoralCamera:
     def findCoralsAndAlgaesOnReef(self, coral: list[list[bool]], reefHitboxes: list, algaeHitboxes: list, robotPosition):
         readSuccess, frame = self.camera.read()
 
+
         self.allPositions = []
         if readSuccess:
             frame = cv2.resize(frame, (self.screenWidth, self.screenHeight)) 
-            results = self.model(frame)
+            results = self.model.predict(frame, verbose=False)
             vectorAlreadyCollided = False
             x1, y1, x2, y2 = False, False, False, False
             algaeOnFrame = [[False for _ in range(6)] for _ in range(2)]
@@ -152,7 +155,8 @@ class CoralCamera:
                                 algaeOnFrame[hitboxSectionIndex][hitboxIndex] = True
                                 vectorAlreadyCollided = False
 
-
+                    else:
+                        algaeOnFrame = [[False for _ in range(12)] for _ in range(4)], [[False for _ in range(6)] for _ in range(2)]
                                 
 
                                     #     # If we haven't seen the algae for more than the tolerance frames, it is not seen right now, and it is marked as true, then assume it isn't there anymore
@@ -212,9 +216,10 @@ class CoralCamera:
                         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             cv2.imshow('heheh', frame)
-            cv2.waitKey(1)
-            
-            return coral, algaeOnFrame
+            cv2.waitKey(5)
+        else:
+            coral, algaeOnFrame = [[False for _ in range(12)] for _ in range(4)], [[False for _ in range(6)] for _ in range(2)] 
+        return coral, algaeOnFrame
 
     def updateAlgaePositions(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[Hitbox.hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
         # Getting each point on the reef to compare which ones are closest to the robot

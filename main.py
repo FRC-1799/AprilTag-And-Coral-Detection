@@ -11,7 +11,7 @@ from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-#import pyudev
+import pyudev
 import os
 
 def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
@@ -39,7 +39,6 @@ def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     return reefCoral, reefAlgae 
 
 def coralCameraIndex(device) -> None | int:
-    return 0
     context = pyudev.Context()
     device_file = "/dev/video{}".format(device)
     deviceClass = pyudev.Devices.from_device_file(context, device_file)

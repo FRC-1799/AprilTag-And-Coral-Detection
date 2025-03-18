@@ -68,5 +68,5 @@ class CoralAndAlgaeCameraConstants:
     coralConfidenceTolerance = 0.75
     algaeConfidenceTolerance = 0
 
-    algaeViewedTolerance = 100 # Times we can not see the algae before we mark it as false
+    algaeViewedTolerance = 20 # Times we can not see the algae before we mark it as false
 
