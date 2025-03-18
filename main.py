@@ -105,7 +105,7 @@ def main():
         """
 
         coralTable = visionTable.getSubTable("CoralPositions")
-        algaeTable = visionTable.getSubTable("ReefPositions")
+        algaeTable = visionTable.getSubTable("AlgaePositions")
         
         defaultReef = [False for _ in range(12)]
         defaultAlgae = [False for _ in range(6)]
