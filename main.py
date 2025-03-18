@@ -267,10 +267,10 @@ def main():
             robotPosition = odometryRobotPoseSubscriber.get().estimatedPose
 
         if robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
-            coral, algae = grab_past_reef(coralSubscribers, algaeSubscribers)
-            coralCamera.findCoralsAndAlgaesOnReef(coral, coralHitboxes, algaeHitboxes, robotPosition)
-            coralCamera.updateAlgaePositions(algae, algaeHitboxes, robotPosition)
-            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coral, algae)
+            coral, algaeNetworkTables = grab_past_reef(coralSubscribers, algaeSubscribers)
+            coral, algaeOnFrame = coralCamera.findCoralsAndAlgaesOnReef(coral, coralHitboxes, algaeHitboxes, robotPosition)
+            algaeToPublish = coralCamera.updateAlgaePositions(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotPosition)
+            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coral, algaeToPublish)
 
             pitchYawPublisher.set(coralCamera.allPositions)
                 
