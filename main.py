@@ -137,7 +137,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("10.17.99.1")
+    inst.setServer("127.0.0.1")
     #inst.setServerTeam(1799)
     if Constants.CoralAndAlgaeCameraConstants.robotReal:
         inst.startClient4("ReefIndexer")
