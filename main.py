@@ -137,7 +137,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("10.17.99.1")
+    inst.setServer("10.17.99.2")
     #inst.setServerTeam(1799)
     if Constants.CoralAndAlgaeCameraConstants.robotReal:
         inst.startClient4("ReefIndexer")
@@ -160,7 +160,7 @@ def main():
     # robotFrontPosePublisher = robotFrontPoseTopic.publish()
     # robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
     # robotBackPosePublisher = robotBackPoseTopic.publish()
-    odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose2d)
+    odometryRobotPoseTopic = inst.getStructTopic("robotPose", Pose2d)
     odometryRobotPoseSubscriber = odometryRobotPoseTopic.subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
     # aprilTagCameraConnectionTopic = visionTable.getBooleanTopic("AprilTagCameraConnection")
     # aprilTagCameraConnectionPublisher = aprilTagCameraConnectionTopic.publish()
