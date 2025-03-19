@@ -55,6 +55,7 @@ class CoralCamera:
 
         self.allPositions = []
         if readSuccess:
+            frame = cv2.flip(frame, 0)
             frame = cv2.resize(frame, (self.screenWidth, self.screenHeight)) 
             results = self.model.predict(frame, verbose=False)
             vectorAlreadyCollided = False
@@ -86,7 +87,7 @@ class CoralCamera:
                             coralYaw = -(coralYaw - centerYaw)
                             coralPitch = (coralPitch - centerPitch)
 
-                            vectorOfCoral = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), coralPitch, coralYaw)
+                            vectorOfCoral = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION), coralPitch, coralYaw)
 
                             # Loops again for a certain increment across the line, and the increment acts as the x value for the equation
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
@@ -128,7 +129,7 @@ class CoralCamera:
                             algaeYaw = -(algaeYaw - centerYaw)
                             algaePitch = (algaePitch - centerPitch)
 
-                            vectorOfAlgae = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), algaePitch, algaeYaw)
+                            vectorOfAlgae = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION), algaePitch, algaeYaw)
                             allIntersectValues = []
 
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
@@ -220,7 +221,7 @@ class CoralCamera:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            cv2.imshow('heheh', frame)
+            #cv2.imshow('heheh', frame)
             cv2.waitKey(1)
         else:
             algaeOnFrame = [[False for _ in range(6)] for _ in range(2)] 
@@ -232,21 +233,19 @@ class CoralCamera:
         closestSectionIndexes = self.get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
 
         for level in range(len(algaeOnFrame)):
-            for algae in range(len(algaeOnFrame[0])):
-                specificAlgaeOnFrame = algaeOnFrame[level][closestSectionIndexes[level]]
-                if specificAlgaeOnFrame:
-                    algaeNetworkTables[level][algae] = True
-                    self.algaeNotSeenCounterList[level][algae] = 0  
-                elif algaeNetworkTables[level][algae]:
-                    self.algaeNotSeenCounterList[level][algae] += 1
-                else:
-                    algaeNetworkTables[level][algae] = False
-                    
-                
-                    
-                if not specificAlgaeOnFrame and self.algaeNotSeenCounterList[level][algae] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and algaeNetworkTables[level][algae]:
-                    algaeNetworkTables[level][algae] = False
-                    self.algaeNotSeenCounterList[level][algae] = 0  
+            #for algae in range(len(algaeOnFrame[0])):
+            specificAlgaeOnFrame = algaeOnFrame[level][closestSectionIndexes[level]]
+            if specificAlgaeOnFrame:
+                algaeNetworkTables[level][closestSectionIndexes[level]] = True
+                self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] = 0  
+            elif algaeNetworkTables[level][closestSectionIndexes[level]]:
+                self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] += 1
+            else:
+                algaeNetworkTables[level][closestSectionIndexes[level]] = False
+
+            if not specificAlgaeOnFrame and self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and algaeNetworkTables[level][closestSectionIndexes[level]]:
+                algaeNetworkTables[level][closestSectionIndexes[level]] = False
+                self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] = 0  
 
 
                     

@@ -49,7 +49,7 @@ import math
 class CoralAndAlgaeCameraConstants:
     shouldTestCoral = True
     shouldTestAlgae = True
-    shouldTestAprilTags = True
+    shouldTestAprilTags = False
     robotReal = True
     coralCameraHorizontalAngleRad = math.radians(54.06)
     coralCameraVerticalAngleRad = math.radians(41.91)
@@ -70,5 +70,5 @@ class CoralAndAlgaeCameraConstants:
     coralConfidenceTolerance = 0.75
     algaeConfidenceTolerance = 0
 
-    algaeViewedTolerance = 20 # Times we can not see the algae before we mark it as false
+    algaeViewedTolerance = 3 # Times we can not see the algae before we mark it as false
 
