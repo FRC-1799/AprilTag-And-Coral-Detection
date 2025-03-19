@@ -49,8 +49,8 @@ import math
 class CoralAndAlgaeCameraConstants:
     shouldTestCoral = True
     shouldTestAlgae = True
-    shouldTestAprilTags = False
-    robotReal = False
+    shouldTestAprilTags = True
+    robotReal = True
     coralCameraHorizontalAngleRad = math.radians(54.06)
     coralCameraVerticalAngleRad = math.radians(41.91)
     horizontalPixels = 1080 

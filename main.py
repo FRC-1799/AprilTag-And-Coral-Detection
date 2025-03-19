@@ -11,7 +11,7 @@ from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-#import pyudev
+import pyudev
 import os
 
 def grab_past_reef(reefSubscribers, algaeSubscribers, currentReef) -> list[list]:
@@ -44,7 +44,6 @@ def grab_past_reef(reefSubscribers, algaeSubscribers, currentReef) -> list[list]
     return reefCoral, reefAlgae 
 
 def coralCameraIndex(device) -> None | int:
-    return 0
     context = pyudev.Context()
     device_file = "/dev/video{}".format(device)
     deviceClass = pyudev.Devices.from_device_file(context, device_file)
@@ -143,7 +142,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("127.0.0.1")
+    inst.setServer("10.17.99.2")
     #inst.setServerTeam(1799)
     if Constants.CoralAndAlgaeCameraConstants.robotReal:
         inst.startClient4("ReefIndexer")
