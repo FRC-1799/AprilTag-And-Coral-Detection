@@ -11,10 +11,10 @@ from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from Classes.Hitbox import hitbox
 from ConstantsAndUtils import FieldMirroringUtils
-import pyudev
+#import pyudev
 import os
 
-def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
+def grab_past_reef(reefSubscribers, algaeSubscribers, currentReef) -> list[list]:
     """
     Grabs the past value of the reef
     
@@ -25,10 +25,13 @@ def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     list[list] - List of a list of boolean values for the reef
     """
 
-    defaultValue = [False for _ in range(12)]
     reefCoral = [[] for _ in range(4)]
     for level, subscriber in enumerate(reefSubscribers):
-        reefCoral[level] = subscriber.get(defaultValue)
+        reefCoral[level] = subscriber.get()
+        for section in range(12):
+            if currentReef[level][section]:
+                reefCoral[level][section] = True
+        
             
     defaultAlgaeValue = [False for _ in range(6)]
     reefAlgae = [[] for _ in range(2)]
@@ -39,6 +42,7 @@ def grab_past_reef(reefSubscribers, algaeSubscribers) -> list[list]:
     return reefCoral, reefAlgae 
 
 def coralCameraIndex(device) -> None | int:
+    return 0
     context = pyudev.Context()
     device_file = "/dev/video{}".format(device)
     deviceClass = pyudev.Devices.from_device_file(context, device_file)
@@ -137,7 +141,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("10.17.99.2")
+    inst.setServer("127.0.0.1")
     #inst.setServerTeam(1799)
     if Constants.CoralAndAlgaeCameraConstants.robotReal:
         inst.startClient4("ReefIndexer")
@@ -268,7 +272,7 @@ def main():
 
         if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
             reefCameraConnectionPublisher.set(True)
-            coral, algaeNetworkTables = grab_past_reef(coralSubscribers, algaeSubscribers)
+            coral, algaeNetworkTables = grab_past_reef(coralSubscribers, algaeSubscribers, coral)
             coral, algaeOnFrame = coralCamera.findCoralsAndAlgaesOnReef(coral, coralHitboxes, algaeHitboxes, robotPosition)
             algaeToPublish = coralCamera.updateAlgaePositions(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotPosition)
             updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coral, algaeToPublish)

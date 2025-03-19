@@ -59,8 +59,10 @@ class CoralCamera:
             vectorAlreadyCollided = False
             x1, y1, x2, y2 = False, False, False, False
             algaeOnFrame = [[False for _ in range(6)] for _ in range(2)]
+            #print(self.algaeNotSeenCounterList)
             for result in results:
                 for box in result.boxes:
+                    
                     conf = box.conf[0].item()
                     cls = int(box.cls[0].item())
                     if self.model.names[cls].lower() == "coral" and CoralAndAlgaeCameraConstants.shouldTestCoral:
@@ -88,7 +90,7 @@ class CoralCamera:
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
                                 length = length * 0.05
                                 positionLocation = vectorOfCoral.getPoseAtStep(length)
-                                # self.allPositions.append(positionLocation)
+                                self.allPositions.append(positionLocation)
                                 if vectorAlreadyCollided:
                                     break
                                 
@@ -130,7 +132,7 @@ class CoralCamera:
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
                                 length = length * 0.05
                                 positionLocation = vectorOfAlgae.getPoseAtStep(length)
-                                self.allPositions.append(positionLocation) # debug purposes with vector line
+                                #self.allPositions.append(positionLocation) # debug purposes with vector line
                                 
                                 
                                 if vectorAlreadyCollided:
@@ -142,21 +144,22 @@ class CoralCamera:
                                         hitboxSectionIndex = algaeHitboxes.index(hitboxSection)
                                         hitboxIndex = hitboxSection.index(hitbox)
                                         algaeSeen = hitbox.colidePose3d(positionLocation)
-                                        allIntersectValues.append(algaeSeen)
+                                        #allIntersectValues.append(algaeSeen)
 
                                         if algaeSeen:
                                             vectorAlreadyCollided = True
+                                            algaeOnFrame[hitboxSectionIndex][hitboxIndex] = True
                                             break
 
                                     if vectorAlreadyCollided:
                                         break 
                             if vectorAlreadyCollided:
                                 # These values can be used as they are the last ones that existed before the line intercected with a hitbox
-                                algaeOnFrame[hitboxSectionIndex][hitboxIndex] = True
+                                
                                 vectorAlreadyCollided = False
 
                     else:
-                        algaeOnFrame = [[False for _ in range(12)] for _ in range(4)], [[False for _ in range(6)] for _ in range(2)]
+                        algaeOnFrame = [[False for _ in range(6)] for _ in range(2)]
                                 
 
                                     #     # If we haven't seen the algae for more than the tolerance frames, it is not seen right now, and it is marked as true, then assume it isn't there anymore
@@ -215,17 +218,19 @@ class CoralCamera:
                         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                         cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            # cv2.imshow('heheh', frame)
+            cv2.imshow('heheh', frame)
             cv2.waitKey(1)
         else:
-            coral, algaeOnFrame = [[False for _ in range(12)] for _ in range(4)], [[False for _ in range(6)] for _ in range(2)] 
+            algaeOnFrame = [[False for _ in range(6)] for _ in range(2)] 
+            
         return coral, algaeOnFrame
 
     def updateAlgaePositions(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[Hitbox.hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
         # Getting each point on the reef to compare which ones are closest to the robot
         closestSectionIndexes = self.get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
         algaeLevelsToSection = [(algaeNetworkTables[0][i], algaeNetworkTables[1][i]) for i in range(6)] # converts to section so distance will be easier
-        
+        algaeFrameLevelsToSection = [(algaeOnFrame[0][i], algaeOnFrame[1][i]) for i in range(6)]
+
         algaeBoolSections = (algaeLevelsToSection[closestSectionIndexes[0]], algaeLevelsToSection[closestSectionIndexes[1]])
         for section in algaeBoolSections:
             sectionIndex = algaeBoolSections.index(section)
@@ -233,7 +238,7 @@ class CoralCamera:
                 levelIndex = section.index(level)
                 
 
-                algaeCurrentlySeen = algaeOnFrame[sectionIndex][levelIndex] # if an algae the level is seen currently
+                algaeCurrentlySeen = algaeFrameLevelsToSection[sectionIndex][levelIndex] # if an algae the level is seen currently
                 
                 # Handling of all cases of algae
                 if section[levelIndex] and not algaeCurrentlySeen:
