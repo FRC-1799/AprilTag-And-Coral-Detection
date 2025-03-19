@@ -31,6 +31,8 @@ def grab_past_reef(reefSubscribers, algaeSubscribers, currentReef) -> list[list]
         for section in range(12):
             if currentReef[level][section]:
                 reefCoral[level][section] = True
+            else:
+                reefCoral[level][section] = False
         
             
     defaultAlgaeValue = [False for _ in range(6)]

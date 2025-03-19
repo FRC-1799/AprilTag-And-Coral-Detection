@@ -230,36 +230,64 @@ class CoralCamera:
     def updateAlgaePositions(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[Hitbox.hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
         # Getting each point on the reef to compare which ones are closest to the robot
         closestSectionIndexes = self.get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
-        algaeLevelsToSection = [[algaeNetworkTables[0][i], algaeNetworkTables[1][i]] for i in range(6)] # converts to section so distance will be easier
-        algaeFrameLevelsToSection = [[algaeOnFrame[0][i], algaeOnFrame[1][i]] for i in range(6)]
 
-        algaeBoolSections = (algaeFrameLevelsToSection[closestSectionIndexes[0]], algaeFrameLevelsToSection[closestSectionIndexes[1]])
-        for section in algaeBoolSections:
-            sectionIndex = algaeBoolSections.index(section)
-            for level in section:
-                levelIndex = section.index(level)
+        for level in range(len(algaeOnFrame)):
+            for algae in range(len(algaeOnFrame[0])):
+                specificAlgaeOnFrame = algaeOnFrame[level][closestSectionIndexes[level]]
+                if specificAlgaeOnFrame:
+                    algaeNetworkTables[level][algae] = True
+                    self.algaeNotSeenCounterList[level][algae] = 0  
+                elif algaeNetworkTables[level][algae]:
+                    self.algaeNotSeenCounterList[level][algae] += 1
+                else:
+                    algaeNetworkTables[level][algae] = False
+                    
                 
+                    
+                if not specificAlgaeOnFrame and self.algaeNotSeenCounterList[level][algae] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and algaeNetworkTables[level][algae]:
+                    algaeNetworkTables[level][algae] = False
+                    self.algaeNotSeenCounterList[level][algae] = 0  
 
-                algaeCurrentlySeen = algaeFrameLevelsToSection[sectionIndex][levelIndex] # if an algae the level is seen currently
-                
-                # Handling of all cases of algae
-                if section[levelIndex] and not algaeCurrentlySeen:
-                    self.algaeNotSeenCounterList[levelIndex][sectionIndex] += 1
-                elif algaeCurrentlySeen:
-                    algaeLevelsToSection[levelIndex][sectionIndex] = True
-                    self.algaeNotSeenCounterList[levelIndex][sectionIndex] = 0
 
-                shouldMarkAsFalse = section[levelIndex] and self.algaeNotSeenCounterList[sectionIndex][levelIndex] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and not algaeCurrentlySeen
-                if shouldMarkAsFalse:
-                    algaeLevelsToSection[levelIndex][sectionIndex] = False
-                    self.algaeNotSeenCounterList[levelIndex][sectionIndex] = 0
-        
-        # Update the grid at the specified indices
-        for row in range(2):  # We only have 2 rows to update
-            for col in range(2):  # Each row gets 2 updated values
-                algaeNetworkTables[row][closestSectionIndexes[col]] = algaeLevelsToSection[row][col]
-
+                    
         return algaeNetworkTables
+
+        
+        # for section in algaeClosestBoolSections:
+        #     sectionIndex = algaeClosestBoolSections.index(section)
+        #     for level in section:
+        #         levelIndex = section.index(level)
+        #         algaeCurrentlySeen = algaeClosestBoolSections[sectionIndex][levelIndex]
+
+        # algaeClosestBoolSections = (algaeFrameLevelsToSection[closestSectionIndexes[0]], algaeFrameLevelsToSection[closestSectionIndexes[1]])
+        # for section in algaeClosestBoolSections:
+        #     sectionIndex = algaeClosestBoolSections.index(section)
+        #     actualSectionIndex = algaeFrameLevelsToSection.index(algaeClosestBoolSections[sectionIndex])
+        #     for level in section:
+        #         levelIndex = section.index(level)
+        #         actualLevelIndex = algaeFrameLevelsToSection[actualSectionIndex].index(section[level])
+                
+
+        #         algaeCurrentlySeen = algaeClosestBoolSections[sectionIndex][levelIndex] # if an algae the level is seen currently
+                 
+        #         # Handling of all cases of algae
+        #         if section[levelIndex] and not algaeCurrentlySeen:
+        #             self.algaeNotSeenCounterList[actualSectionIndex][actualLevelIndex] += 1
+        #         elif algaeCurrentlySeen:
+        #             algaeLevelsToSection[actualSectionIndex][actualLevelIndex] = True
+        #             print(self.algaeNotSeenCounterList)
+        #             self.algaeNotSeenCounterList[actualLevelIndex][actualSectionIndex] = 0
+
+        #         shouldMarkAsFalse = section[levelIndex] and self.algaeNotSeenCounterList[actualSectionIndex][actualLevelIndex] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and not algaeCurrentlySeen
+        #         if shouldMarkAsFalse:
+        #             algaeLevelsToSection[actualSectionIndex][actualLevelIndex] = False
+        #             self.algaeNotSeenCounterList[actualSectionIndex][actualLevelIndex] = 0
+        
+        # # Update the grid at the specified indices
+        # for row in range(2):  # We only have 2 rows to update
+        #     for col in range(2):  # Each row gets 2 updated values
+        #         algaeNetworkTables[row][closestSectionIndexes[col]] = algaeLevelsToSection[row][col]
+
     
     def updateCoralPositions(self):
         coralToPublish = [[False for _ in range(12)] for _ in range(4)]

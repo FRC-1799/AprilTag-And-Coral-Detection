@@ -57,7 +57,7 @@ class CoralAndAlgaeCameraConstants:
     verticalPixels = 720
     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
-    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(-0.120, 0.266, 1.001, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
+    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(0.120, 0.266, 1.001, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
 
     CORAL_CAMERA_NAME = "Reef2"
     cameraPosition = (2.513, 3.997, 0.72)
