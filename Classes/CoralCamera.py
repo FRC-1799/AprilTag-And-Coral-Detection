@@ -86,7 +86,7 @@ class CoralCamera:
                             coralYaw = -(coralYaw - centerYaw)
                             coralPitch = (coralPitch - centerPitch)
 
-                            vectorOfCoral = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION), coralPitch, coralYaw)
+                            vectorOfCoral = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), coralPitch, coralYaw)
 
                             # Loops again for a certain increment across the line, and the increment acts as the x value for the equation
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
@@ -128,7 +128,7 @@ class CoralCamera:
                             algaeYaw = -(algaeYaw - centerYaw)
                             algaePitch = (algaePitch - centerPitch)
 
-                            vectorOfAlgae = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION), algaePitch, algaeYaw)
+                            vectorOfAlgae = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), algaePitch, algaeYaw)
                             allIntersectValues = []
 
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):

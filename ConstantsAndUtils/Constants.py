@@ -1,4 +1,4 @@
-from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d, Pose3d
+from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d, Pose3d, Transform2d
 import math
 
 # class PhotonLibConstants:
@@ -58,6 +58,8 @@ class CoralAndAlgaeCameraConstants:
     reefCameraHorizontalAnglePerPixel = coralCameraHorizontalAngleRad / horizontalPixels
     reefCameraVerticalAnglePerPixel = coralCameraVerticalAngleRad / verticalPixels
     ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION = Transform3d(0.120, 0.266, 1.001, Rotation3d(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
+    ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D = Transform2d(-0.120, 0.266, Rotation2d(0, 10)) # Front camera above the other one. This one is tilted and for coral. ID 2
+
 
     CORAL_CAMERA_NAME = "Reef2"
     cameraPosition = (2.513, 3.997, 0.72)
