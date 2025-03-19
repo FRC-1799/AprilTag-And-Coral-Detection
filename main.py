@@ -77,13 +77,13 @@ def main():
         """
 
         coralPose3dSeen = []
-        for publisher in coralPublishers:
-            
-            for coralLevel in coralTotalList:
-                publisher.set(coralLevel)
-                for coral in coralLevel:
-                    if coral:
-                        coralPose3dSeen.append(pose3dCoralValues[coralTotalList.index(coralLevel)][coralLevel.index(coral)])
+        for coralLevel, publisher in zip(coralTotalList, coralPublishers):
+            publisher.set(coralLevel)
+
+        for coralLevel in coralTotalList:
+            for coral in coralLevel:
+                if coral:
+                    coralPose3dSeen.append(pose3dCoralValues[coralTotalList.index(coralLevel)][coralLevel.index(coral)])
             
         
         coralValuesSeenPublisher.set(coralPose3dSeen)
@@ -92,10 +92,10 @@ def main():
         for algaeLevel, publisher in zip(algaeTotalList, algaePublishers):
             publisher.set(algaeLevel)
             
-            for algaeLevel in algaeTotalList:
-                for algae in algaeLevel:
-                    if algae:
-                        algaePose3dSeen.append(pose3dAlgaeValues[algaeTotalList.index(algaeLevel)][algaeLevel.index(algae)])
+        for algaeLevel in algaeTotalList:
+            for algae in algaeLevel:
+                if algae:
+                    algaePose3dSeen.append(pose3dAlgaeValues[algaeTotalList.index(algaeLevel)][algaeLevel.index(algae)])
             
         algaeValuesSeenPublisher.set(algaePose3dSeen)
 
@@ -150,8 +150,8 @@ def main():
 
 
     # Reef Values
-    coral = [[False for _ in range(12)] for _ in range(4)]
-    algae = [[False for _ in range(6)] for _ in range(2)]
+    coralOnFrame = [[False for _ in range(12)] for _ in range(4)]
+    algaeOnFrame = [[False for _ in range(6)] for _ in range(2)]
     
 
     # Create an instance of the AprilTag camera
@@ -272,10 +272,12 @@ def main():
 
         if coralCamera.camera.isOpened() and robotPosition and (Constants.CoralAndAlgaeCameraConstants.shouldTestAlgae or Constants.CoralAndAlgaeCameraConstants.shouldTestCoral):
             reefCameraConnectionPublisher.set(True)
-            coral, algaeNetworkTables = grab_past_reef(coralSubscribers, algaeSubscribers, coral)
-            coral, algaeOnFrame = coralCamera.findCoralsAndAlgaesOnReef(coral, coralHitboxes, algaeHitboxes, robotPosition)
+            coralNetworkTables, algaeNetworkTables = grab_past_reef(coralSubscribers, algaeSubscribers, coralOnFrame)
+            coralOnFrame, algaeOnFrame = coralCamera.findCoralsAndAlgaesOnReef(coralNetworkTables, coralHitboxes, algaeHitboxes, robotPosition)
             algaeToPublish = coralCamera.updateAlgaePositions(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotPosition)
-            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coral, algaeToPublish)
+            coralToPublish = coralCamera.updateCoralPositions()
+            #print(coralCamera.coralEverSeen)
+            updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher, coralToPublish, algaeToPublish)
 
             pitchYawPublisher.set(coralCamera.allPositions)
                 

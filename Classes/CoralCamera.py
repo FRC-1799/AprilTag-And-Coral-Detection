@@ -21,6 +21,7 @@ class CoralCamera:
         self.screenWidth = CoralAndAlgaeCameraConstants.horizontalPixels
         self.screenHeight = CoralAndAlgaeCameraConstants.verticalPixels
         self.camera = cv2.VideoCapture(self.cameraIndex)
+        self.coralEverSeen = [[False for _ in range(12)] for _ in range(4)]
         self.algaeNotSeenCounterList = [[0 for _ in range(6)] for _ in range(2)]
         self.vectorPoseIntersects = [[False for _ in range(6)] for _ in range(2)] # list of booleans that indicate if a vector has collided with an algae
 
@@ -59,6 +60,7 @@ class CoralCamera:
             vectorAlreadyCollided = False
             x1, y1, x2, y2 = False, False, False, False
             algaeOnFrame = [[False for _ in range(6)] for _ in range(2)]
+            coralOnFrame = [[False for _ in range(12)] for _ in range(4)]
             #print(self.algaeNotSeenCounterList)
             for result in results:
                 for box in result.boxes:
@@ -90,7 +92,7 @@ class CoralCamera:
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
                                 length = length * 0.05
                                 positionLocation = vectorOfCoral.getPoseAtStep(length)
-                                self.allPositions.append(positionLocation)
+                                #self.allPositions.append(positionLocation)
                                 if vectorAlreadyCollided:
                                     break
                                 
@@ -99,7 +101,7 @@ class CoralCamera:
 
                                         # If the Pose3d is colliding with the hitbox, we know which level it is on, so we set that level to true
                                         if reefHitboxes[hitboxSection][hitbox].colidePose3d(positionLocation):
-                                            coral[hitboxSection][hitbox] = True
+                                            self.coralEverSeen[hitboxSection][hitbox] = True
                                             vectorAlreadyCollided = True
                                             break
                                     if vectorAlreadyCollided:
@@ -132,7 +134,7 @@ class CoralCamera:
                             for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
                                 length = length * 0.05
                                 positionLocation = vectorOfAlgae.getPoseAtStep(length)
-                                #self.allPositions.append(positionLocation) # debug purposes with vector line
+                                self.allPositions.append(positionLocation) # debug purposes with vector line
                                 
                                 
                                 if vectorAlreadyCollided:
@@ -223,15 +225,15 @@ class CoralCamera:
         else:
             algaeOnFrame = [[False for _ in range(6)] for _ in range(2)] 
             
-        return coral, algaeOnFrame
+        return coralOnFrame, algaeOnFrame
 
     def updateAlgaePositions(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[Hitbox.hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
         # Getting each point on the reef to compare which ones are closest to the robot
         closestSectionIndexes = self.get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
-        algaeLevelsToSection = [(algaeNetworkTables[0][i], algaeNetworkTables[1][i]) for i in range(6)] # converts to section so distance will be easier
-        algaeFrameLevelsToSection = [(algaeOnFrame[0][i], algaeOnFrame[1][i]) for i in range(6)]
+        algaeLevelsToSection = [[algaeNetworkTables[0][i], algaeNetworkTables[1][i]] for i in range(6)] # converts to section so distance will be easier
+        algaeFrameLevelsToSection = [[algaeOnFrame[0][i], algaeOnFrame[1][i]] for i in range(6)]
 
-        algaeBoolSections = (algaeLevelsToSection[closestSectionIndexes[0]], algaeLevelsToSection[closestSectionIndexes[1]])
+        algaeBoolSections = (algaeFrameLevelsToSection[closestSectionIndexes[0]], algaeFrameLevelsToSection[closestSectionIndexes[1]])
         for section in algaeBoolSections:
             sectionIndex = algaeBoolSections.index(section)
             for level in section:
@@ -244,13 +246,29 @@ class CoralCamera:
                 if section[levelIndex] and not algaeCurrentlySeen:
                     self.algaeNotSeenCounterList[levelIndex][sectionIndex] += 1
                 elif algaeCurrentlySeen:
-                    algaeNetworkTables[levelIndex][sectionIndex] = True
+                    algaeLevelsToSection[levelIndex][sectionIndex] = True
                     self.algaeNotSeenCounterList[levelIndex][sectionIndex] = 0
 
                 shouldMarkAsFalse = section[levelIndex] and self.algaeNotSeenCounterList[sectionIndex][levelIndex] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and not algaeCurrentlySeen
                 if shouldMarkAsFalse:
-                    algaeNetworkTables[levelIndex][sectionIndex] = False
+                    algaeLevelsToSection[levelIndex][sectionIndex] = False
                     self.algaeNotSeenCounterList[levelIndex][sectionIndex] = 0
-                    
+        
+        # Update the grid at the specified indices
+        for row in range(2):  # We only have 2 rows to update
+            for col in range(2):  # Each row gets 2 updated values
+                algaeNetworkTables[row][closestSectionIndexes[col]] = algaeLevelsToSection[row][col]
+
         return algaeNetworkTables
+    
+    def updateCoralPositions(self):
+        coralToPublish = [[False for _ in range(12)] for _ in range(4)]
+        for level in self.coralEverSeen:
+            levelIndex = self.coralEverSeen.index(level)
+            for coral in level:
+                coralIndex = level.index(coral)
+                if coral:
+                    coralToPublish[levelIndex][coralIndex] = True
+        
+        return self.coralEverSeen
 
