@@ -52,7 +52,6 @@ import os
 #     else:
 #         return None
 
-
     
 def main():
     def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
@@ -68,7 +67,7 @@ def main():
         if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
             robotPosition=robotPosition.relativeTo(FieldMirroringUtils.FIELD_WIDTH, FieldMirroringUtils.FIELD_HEIGHT, 0, Rotation3d)
         
-        return robotPosition, timestamp
+        return robotPosition, timestamp 
     
     # def updateReef(coralPublishers, algaePublishers, coralValuesSeenPublisher, algaeValuesSeenPublisher):
     #     """
@@ -139,7 +138,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("10.17.99.1")
+    inst.setServer("10.17.99.2")
     if Constants.PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
@@ -153,6 +152,7 @@ def main():
 
     # Create an instance of the AprilTag camera
     aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION)
+
     aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION)
 
     # Grabs the Robot's topic and publisher
@@ -219,7 +219,6 @@ def main():
         #     time.sleep(10)
         #     coralCamera = CoralCamera.CoralCamera(deviceNumber)
 
-
         if Constants.PhotonLibConstants.shouldTestAprilTags:
         
             if aprilTagCameraFront.isConnected():
@@ -227,10 +226,15 @@ def main():
                 aprilTagsFront = aprilTagCameraFront.get_tags()
                 if aprilTagsFront:
                     robotPositionFront, timestamp = fetchRobotPosition(aprilTagCameraFront)
+                    timeOffset = inst.getServerTimeOffset()
+                    if timeOffset != None and timestamp != None:
+                        timestamp += (timeOffset / 1000000)
+                    else:
+                        timestamp = 0
+
                     if robotPositionFront:
                         robotFrontPosePublisher.set(robotPositionFront.estimatedPose)
                         aprilTagFrontCameraTimestampPublisher.set(timestamp)
-                        
                     else:
                         robotFrontPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
                         
@@ -239,6 +243,7 @@ def main():
                 aprilTagsBack = aprilTagCameraBack.get_tags()
                 if aprilTagsBack:
                     robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
+                    timestamp += (inst.getServerTimeOffset() / 1000000)
                     if robotPositionBack:
                         robotBackPosePublisher.set(robotPositionBack.estimatedPose)
                         aprilTagBackCameraTimestampPublisher.set(timestamp)
