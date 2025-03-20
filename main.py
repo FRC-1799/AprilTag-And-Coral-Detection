@@ -138,7 +138,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("10.17.99.2")
+    inst.setServer("127.0.0.1")
     if Constants.PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
@@ -167,9 +167,9 @@ def main():
     aprilTagFrontCameraConnectionPublisher = aprilTagFrontCameraConnectionTopic.publish()
     aprilTagBackCameraConnectionTopic = visionTable.getBooleanTopic("BackCameraConnection")
     aprilTagBackCameraConnectionPublisher = aprilTagBackCameraConnectionTopic.publish()
-    aprilTagFrontCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampFront")
+    aprilTagFrontCameraTimestampTopic = inst.getDoubleTopic("RobotPoseTimestampFront")
     aprilTagFrontCameraTimestampPublisher = aprilTagFrontCameraTimestampTopic.publish()
-    aprilTagBackCameraTimestampTopic = visionTable.getDoubleTopic("RobotPoseTimestampBack")
+    aprilTagBackCameraTimestampTopic = inst.getDoubleTopic("RobotPoseTimestampBack")
     aprilTagBackCameraTimestampPublisher = aprilTagBackCameraTimestampTopic.publish()
 
     robotPositionFront = None
@@ -243,7 +243,9 @@ def main():
                 aprilTagsBack = aprilTagCameraBack.get_tags()
                 if aprilTagsBack:
                     robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
-                    timestamp += (inst.getServerTimeOffset() / 1000000)
+                    timeOffset = inst.getServerTimeOffset()
+                    if timeOffset != None and timestamp != None:
+                        timestamp += (timeOffset / 1000000)
                     if robotPositionBack:
                         robotBackPosePublisher.set(robotPositionBack.estimatedPose)
                         aprilTagBackCameraTimestampPublisher.set(timestamp)
