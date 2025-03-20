@@ -138,7 +138,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("127.0.0.1")
+    inst.setServer("10.17.99.1")
     if Constants.PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
