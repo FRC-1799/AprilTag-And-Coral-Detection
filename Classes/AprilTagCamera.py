@@ -12,7 +12,7 @@ from wpimath.geometry import Transform3d, Pose2d, Pose3d, Translation3d
 
 class AprilTagCamera:
 
-    def __init__(self, cameraName: str, cameraTransformation: Transform3d):
+    def __init__(self, cameraName: str, cameraTransformation: Transform3d, aprilTagField: apriltag.AprilTagFieldLayout):
         """
         When initialized, a PhotonCamera will be created, along with a PhotonPoseEstimator if the camera being passed is supposed to detect April Tags.
 
@@ -24,7 +24,7 @@ class AprilTagCamera:
         self.cameraName = cameraName
         self.camera = PhotonCamera(self.cameraName)
         self.estimator = PhotonPoseEstimator(
-            apriltag.AprilTagFieldLayout.loadField(apriltag.AprilTagField.k2025ReefscapeWelded),
+            apriltag.AprilTagFieldLayout.loadField(aprilTagField),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.camera,
             cameraTransformation,
