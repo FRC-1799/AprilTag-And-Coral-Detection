@@ -104,7 +104,7 @@ def main():
                     else:
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
 
-    time.sleep(0.01) # 10 ms
+        time.sleep(0.01) # 10 ms
 
             
 if __name__ == "__main__":
