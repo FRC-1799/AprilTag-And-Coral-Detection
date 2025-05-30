@@ -1,0 +1,14 @@
+[Unit]
+Description=PhotonVision Service
+After=network.target
+
+[Service]
+ExecStart=java -jar /home/apriltag/Documents/Github/AprilTag-And-Coral-Detection/PhotonVisionJar/photonvision-v2025.2.1-linuxarm64.jar
+WorkingDirectory=/home/apriltag/Documents/Github/AprilTag-And-Coral-Detection/PhotonVisionJar/
+User=apriltag
+Restart=always
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
