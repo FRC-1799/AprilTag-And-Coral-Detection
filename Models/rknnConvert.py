@@ -2,11 +2,11 @@ from ultralytics import YOLO
 from rknn.api import RKNN
 
 # Converts trained model to ONNX format
-# model = YOLO("Models/BestModel.pt")
-# model.export(format="onnx",opset=12, simplify=True)
+model = YOLO("Models/ReefV1Best.pt")
+model.export(format="onnx",opset=12, simplify=True)
 
 # Paths
-ONNX_MODEL = "Models/BestModel.onnx"
+ONNX_MODEL = "Models/ReefV1Best.onnx"
 RKNN_MODEL_NAME = "Models/ReefV1-640-640-yolov8n.rknn" # TODO: Change this later to be the model name
 DATASET_PATH = "Models/dataset.txt"
 
