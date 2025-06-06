@@ -1,7 +1,15 @@
 from ultralytics import YOLO
 
-# Load a pre-trained YOLOv8 model (if training from scratch)
-model = YOLO("yolov8n.pt")  # Use yolov8s.pt for a larger model
+# Load a pre-trained YOLOv8 Nano model
+model = YOLO("yolov8n.pt")  # Or "yolov8s.pt", "yolov8m.pt", etc.
 
-# Train the model using your dataset
-model.train(data="path/to/data.yaml", epochs=50, imgsz=640) # Adjust epochs and imgsz as needed
+# Train the model
+model.train(
+    data="C:\\Documents\\GitHub\\Note-Detection\\ImagesForTraining\\data.yaml",  # Update this to the actual path
+    epochs=50,
+    patience=10,
+    imgsz=640,
+    batch=4,                 # Optional: adjust based on your GPU
+    workers=0,                # Optional: number of dataloader workers
+    device="cpu"              # Optional: set to 'cpu' or '0', '1', etc. for specific GPUs
+) # set resume=True if you want to resume training from a previous checkpoint
