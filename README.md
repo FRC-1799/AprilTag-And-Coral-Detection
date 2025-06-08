@@ -18,6 +18,6 @@ This code is indended to be used alongside Photon Vision. Photon Vision will tak
 3. Go to Settings, then find the ```Object Detection``` panel. Once there, click ```Import New Model``` and upload the files downloaded in step 1.
 4. Go to Dashboard and change the Type to Object Detection. Go to the Object Detection slide below the camera view; select the imported model and edit any other settings to make it optimized to your specific system.
 
-**_NOTE:_**  I'm writing this now so I don't forget the steps later. The flow of this readme is good right now.
+**_NOTE:_**  I'm writing this now so I don't forget the steps later. The flow of this readme is bad right now.
 
 

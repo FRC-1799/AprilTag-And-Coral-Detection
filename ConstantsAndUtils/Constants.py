@@ -1,6 +1,9 @@
 from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d, Pose3d
 import math
 
+class baseConstants:
+    serverName = "localhost"
+
 class PhotonLibConstants:
     shouldTestAprilTags = True
     robotReal = True

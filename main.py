@@ -4,11 +4,13 @@ import cv2
 import wpimath
 from ConstantsAndUtils.Constants import PhotonLibConstants
 from Classes.AprilTagCamera import *
+from Classes.ReefCamera import *
 from wpimath.geometry import Pose3d, Rotation3d
 import keyboard
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from ConstantsAndUtils import FieldMirroringUtils
+from ntcore import StructPublisher, BooleanPublisher, DoublePublisher
 
 def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
     """
@@ -31,78 +33,81 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer("10.17.99.1")
+    inst.setServer(Constants.baseConstants.serverName)
     if Constants.PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
         inst.startServer()
 
-    # Create an instance of the AprilTag camera
+    # Create an instance of the AprilTag and Reef cameras
     aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION)
-
     aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION)
+    reefCamera = ReefCamera()
 
-    # Grabs the Robot's topic and publisher
+
     visionTable = inst.getTable("Vision")
-    robotFrontPoseTopic = visionTable.getStructTopic("FrontRobotPose", Pose3d)
-    robotFrontPosePublisher = robotFrontPoseTopic.publish()
-    robotBackPoseTopic = visionTable.getStructTopic("BackRobotPose", Pose3d)
-    robotBackPosePublisher = robotBackPoseTopic.publish()
-    odometryRobotPoseTopic = inst.getStructTopic("RobotPose", Pose3d)
-    odometryRobotPoseSubscriber = odometryRobotPoseTopic.subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
-    aprilTagFrontCameraConnectionTopic = visionTable.getBooleanTopic("FrontCameraConnection")
-    aprilTagFrontCameraConnectionPublisher = aprilTagFrontCameraConnectionTopic.publish()
-    aprilTagBackCameraConnectionTopic = visionTable.getBooleanTopic("BackCameraConnection")
-    aprilTagBackCameraConnectionPublisher = aprilTagBackCameraConnectionTopic.publish()
-    aprilTagFrontCameraTimestampTopic = inst.getDoubleTopic("RobotPoseTimestampFront")
-    aprilTagFrontCameraTimestampPublisher = aprilTagFrontCameraTimestampTopic.publish()
-    aprilTagBackCameraTimestampTopic = inst.getDoubleTopic("RobotPoseTimestampBack")
-    aprilTagBackCameraTimestampPublisher = aprilTagBackCameraTimestampTopic.publish()
+
+    # Publishers to publish the 2 camera's estimated positions, and the odometry's position
+    robotFrontPosePublisher:StructPublisher = visionTable.getStructTopic("FrontRobotPose", Pose3d).publish()
+    robotBackPosePublisher:StructPublisher = visionTable.getStructTopic("BackRobotPose", Pose3d).publish()
+    odometryRobotPoseSubscriber = inst.getStructTopic("RobotPose", Pose3d).subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
+
+    # Camera connection statuses and timestamps for debugging
+    aprilFrontCameraConnectionPublisher:BooleanPublisher = visionTable.getBooleanTopic("FrontCameraConnection").publish()
+    aprilBackCameraConnectionPublisher:BooleanPublisher = visionTable.getBooleanTopic("BackCameraConnection").publish()
+    reefCameraConnectionPublisher:BooleanPublisher = visionTable.getBooleanTopic("ReefCameraConnection").publish
+    aprilFrontCameraTimestampPublisher:DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampFront").publish()
+    aprilBackCameraTimestampPublisher:DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampBack").publish()
 
     robotPositionFront = None
     
     while True:
-        if keyboard.is_pressed("q"):
-            aprilTagFrontCameraConnectionPublisher.set(False)
-            aprilTagBackCameraConnectionPublisher.set(False)
-            inst.disconnect()
-            cv2.destroyAllWindows()
-            
-            break
+        frontCameraConnection, backCameraConnection, reefCameraConnection = aprilTagCameraFront.isConnected(), aprilTagCameraBack.isConnected()
 
-        if Constants.PhotonLibConstants.shouldTestAprilTags:
+        aprilFrontCameraConnectionPublisher.set(frontCameraConnection)
+        aprilBackCameraConnectionPublisher.set(backCameraConnection)
+
         
-            if aprilTagCameraFront.isConnected():
-                aprilTagFrontCameraConnectionPublisher.set(True)
+        # Checks if cameras are connected and see April Tags. If they do, publish their estimated positions
+        if Constants.PhotonLibConstants.shouldTestAprilTags:
+            if frontCameraConnection:
                 aprilTagsFront = aprilTagCameraFront.get_tags()
                 if aprilTagsFront:
-                    robotPositionFront, timestamp = fetchRobotPosition(aprilTagCameraFront)
+                    robotPositionFront, timestampFront = fetchRobotPosition(aprilTagCameraFront)
                     timeOffset = inst.getServerTimeOffset()
-                    if timeOffset != None and timestamp != None:
-                        timestamp += (timeOffset / 1000000)
+                    if timeOffset != None and timestampFront != None:
+                        timestampFront += (timeOffset / 1000000)
                     else:
-                        timestamp = 0
+                        timestampFront = 0
 
                     if robotPositionFront:
                         robotFrontPosePublisher.set(robotPositionFront.estimatedPose)
-                        aprilTagFrontCameraTimestampPublisher.set(timestamp)
+                        aprilFrontCameraTimestampPublisher.set(timestampFront)
                     else:
                         robotFrontPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
                         
-            if aprilTagCameraBack.isConnected():
-                aprilTagBackCameraConnectionPublisher.set(True)
+            if backCameraConnection:
                 aprilTagsBack = aprilTagCameraBack.get_tags()
                 if aprilTagsBack:
-                    robotPositionBack, timestamp = fetchRobotPosition(aprilTagCameraBack)
+                    robotPositionBack, timestampBack = fetchRobotPosition(aprilTagCameraBack)
                     timeOffset = inst.getServerTimeOffset()
-                    if timeOffset != None and timestamp != None:
-                        timestamp += (timeOffset / 1000000)
+                    if timeOffset != None and timestampBack != None:
+                        timestampBack += (timeOffset / 1000000)
+                    else: 
+                        timestampBack = 0
+
                     if robotPositionBack:
                         robotBackPosePublisher.set(robotPositionBack.estimatedPose)
-                        aprilTagBackCameraTimestampPublisher.set(timestamp)
-                        
+                        aprilBackCameraTimestampPublisher.set(timestampBack)
                     else:
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+
+        if keyboard.is_pressed("q"):
+            aprilFrontCameraConnectionPublisher.set(False)
+            aprilBackCameraConnectionPublisher.set(False)
+            inst.disconnect()
+            cv2.destroyAllWindows()
+            break
 
         time.sleep(0.01) # 10 ms
 
