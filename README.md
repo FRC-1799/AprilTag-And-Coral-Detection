@@ -11,9 +11,12 @@ This code is indended to be used alongside Photon Vision. Photon Vision will tak
 **_NOTE:_**  If you are using an operating system that is not Windows, these steps may vary, so navigate to [Software Installation](https://docs.photonvision.org/en/latest/docs/advanced-installation/sw_install/index.html) to see all other ways of installation
 
 ## Using AI with Photonvision
-1. Train the AI. I did so by downloading a dataset (e.g. [2025 REEFSCAPE Computer Vision Project](https://universe.roboflow.com/main-ciqhn/2025-reefscape-tzh2r)) and training it using Ultralytics and Python. In the data set folder, you should find a data.yaml file. By using the same template in ```Models/trainModel.py```, you can train the model off of the provided data set.
-2. Convert AI format to RKNN. Follow the Training step onward from Team 5990 Trigon's [documentation on Kaggle](https://www.kaggle.com/code/lavirz/yolov8-to-rknn), it was very helpful. Also, installing RKNN Toolkit 2 is easier using pip: ```pip install rknn-toolkit2```.
-3. Load newly converted model into Photonvision via the Settings panel.
+1. Install the Ai's from [here](https://drive.google.com/drive/folders/1cxrA04-azHyn-g9JzCtohw8g3ot95fH8) which I found in the Photonvision Discord. Go to the ```actuallyWorking``` folder and download ```algaeAndCoralv8-640-640-yolov8s.rknn```, as well as the associated labels file. 
+   - You can also go into the ```Models``` folder located in this repo and download those, they are the same as the files in the Drive folder.
+2. Start Photonvision on a computer that supports RKNN Ai models
+   - Your computer needs a RK3588 CPU in order to run Ai models on Photonvision (more info [here](https://docs.photonvision.org/en/latest/docs/objectDetection/about-object-detection.html))
+3. Go to Settings, then find the ```Object Detection``` panel. Once there, click ```Import New Model``` and upload the files downloaded in step 1.
+4. Go to Dashboard and change the Type to Object Detection. Go to the Object Detection slide below the camera view; select the imported model and edit any other settings to make it optimized to your specific system.
 
 **_NOTE:_**  I'm writing this now so I don't forget the steps later. The flow of this readme is good right now.
 
