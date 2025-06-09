@@ -10,7 +10,8 @@ import keyboard
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from ConstantsAndUtils import FieldMirroringUtils
-from ntcore import StructPublisher, BooleanPublisher, DoublePublisher
+from ntcore import StructPublisher, BooleanPublisher, DoublePublisher, StructSubscriber
+import robotpy_apriltag as apriltag
 
 def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
     """
@@ -40,32 +41,33 @@ def main():
         inst.startServer()
 
     # Create an instance of the AprilTag and Reef cameras
-    aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION)
-    aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION)
-    reefCamera = ReefCamera()
+    aprilTagCameraFront = AprilTagCamera(PhotonLibConstants.APRIL_TAG_FRONT_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_FRONT_TRANSFORMATION, apriltag.AprilTagField.k2025ReefscapeWelded)
+    aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION, apriltag.AprilTagField.k2025ReefscapeWelded)
+    reefCamera = ReefCamera(PhotonLibConstants.REEF_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION)
 
 
     visionTable = inst.getTable("Vision")
 
     # Publishers to publish the 2 camera's estimated positions, and the odometry's position
-    robotFrontPosePublisher:StructPublisher = visionTable.getStructTopic("FrontRobotPose", Pose3d).publish()
-    robotBackPosePublisher:StructPublisher = visionTable.getStructTopic("BackRobotPose", Pose3d).publish()
-    odometryRobotPoseSubscriber = inst.getStructTopic("RobotPose", Pose3d).subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
+    robotFrontPosePublisher: StructPublisher = visionTable.getStructTopic("FrontRobotPose", Pose3d).publish()
+    robotBackPosePublisher: StructPublisher = visionTable.getStructTopic("BackRobotPose", Pose3d).publish()
+    odometryRobotPoseSubscriber: StructSubscriber = inst.getStructTopic("RobotPose", Pose3d).subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
 
     # Camera connection statuses and timestamps for debugging
-    aprilFrontCameraConnectionPublisher:BooleanPublisher = visionTable.getBooleanTopic("FrontCameraConnection").publish()
-    aprilBackCameraConnectionPublisher:BooleanPublisher = visionTable.getBooleanTopic("BackCameraConnection").publish()
-    reefCameraConnectionPublisher:BooleanPublisher = visionTable.getBooleanTopic("ReefCameraConnection").publish
-    aprilFrontCameraTimestampPublisher:DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampFront").publish()
-    aprilBackCameraTimestampPublisher:DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampBack").publish()
+    aprilFrontCameraConnectionPublisher: BooleanPublisher = visionTable.getBooleanTopic("FrontCameraConnection").publish()
+    aprilBackCameraConnectionPublisher: BooleanPublisher = visionTable.getBooleanTopic("BackCameraConnection").publish()
+    reefCameraConnectionPublisher: BooleanPublisher = visionTable.getBooleanTopic("ReefCameraConnection").publish()
+    aprilFrontCameraTimestampPublisher: DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampFront").publish()
+    aprilBackCameraTimestampPublisher: DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampBack").publish()
 
     robotPositionFront = None
     
     while True:
-        frontCameraConnection, backCameraConnection, reefCameraConnection = aprilTagCameraFront.isConnected(), aprilTagCameraBack.isConnected()
+        frontCameraConnection, backCameraConnection, reefCameraConnection = aprilTagCameraFront.isConnected(), aprilTagCameraBack.isConnected(), reefCamera.isConnected()
 
         aprilFrontCameraConnectionPublisher.set(frontCameraConnection)
         aprilBackCameraConnectionPublisher.set(backCameraConnection)
+        reefCameraConnectionPublisher.set(reefCameraConnection)
 
         
         # Checks if cameras are connected and see April Tags. If they do, publish their estimated positions
@@ -101,6 +103,10 @@ def main():
                         aprilBackCameraTimestampPublisher.set(timestampBack)
                     else:
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
+
+        if PhotonLibConstants.shouldTestCoral:
+            if reefCameraConnection:
+                reefCamera.getObjects()
 
         if keyboard.is_pressed("q"):
             aprilFrontCameraConnectionPublisher.set(False)

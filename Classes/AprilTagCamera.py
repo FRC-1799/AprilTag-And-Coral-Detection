@@ -1,7 +1,6 @@
 import robotpy_apriltag as apriltag
 from ConstantsAndUtils import Constants
 import math
-
 from typing import Optional
 from photonlibpy.estimatedRobotPose import EstimatedRobotPose
 from photonlibpy.photonCamera import PhotonCamera

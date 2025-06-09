@@ -7,6 +7,7 @@ from photonlibpy.estimatedRobotPose import EstimatedRobotPose
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 from wpimath.geometry import Transform3d, Pose2d, Pose3d, Translation3d
+from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
 class ReefCamera:
     def __init__(self, cameraName: str, cameraTransformation: Transform3d):
@@ -21,3 +22,18 @@ class ReefCamera:
         self.cameraName = cameraName
         self.camera = PhotonCamera(self.cameraName)
         self.cameraTransformation = cameraTransformation
+    
+    def isConnected(self):
+        return self.camera.isConnected()
+
+    def getObjects(self) -> list[PhotonTrackedTarget]:
+        """
+        Gets Coral and Algae found in the camera and returns them in a list.
+
+        Returns:
+        Dictionary[integer, Transform3d]: The integer is the ID for the April Tag and the Transform3d is the position of the tag
+        """
+
+        photonResult = self.camera.getLatestResult()
+        resultTargets: list[PhotonTrackedTarget] = photonResult.getTargets()
+        return resultTargets
