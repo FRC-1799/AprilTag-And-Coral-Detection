@@ -2,7 +2,7 @@ import time
 import ntcore
 import cv2
 import wpimath
-from ConstantsAndUtils.Constants import PhotonLibConstants
+from ConstantsAndUtils.Constants import PhotonLibConstants, BaseConstants
 from Classes.AprilTagCamera import *
 from Classes.ReefCamera import *
 from wpimath.geometry import Pose3d, Rotation3d
@@ -34,7 +34,7 @@ def main():
     
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
-    inst.setServer(Constants.baseConstants.serverName)
+    inst.setServer(BaseConstants.serverName)
     if Constants.PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
