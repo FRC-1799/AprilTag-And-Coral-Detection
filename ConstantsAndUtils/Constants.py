@@ -30,4 +30,5 @@ class PhotonLibConstants:
     REEF_HEIGHT = 0.25
     REEF_X_TOLERANCE = 0.5
     REEF_Y_TOLERANCE = 1
+    ALGAE_VIEWED_TOLERANCE = 100 # frames
 

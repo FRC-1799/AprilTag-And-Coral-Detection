@@ -10,7 +10,7 @@ import keyboard
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from ConstantsAndUtils import FieldMirroringUtils
-from ntcore import StructPublisher, BooleanPublisher, DoublePublisher, StructSubscriber
+from ntcore import StructPublisher, BooleanPublisher, DoublePublisher, StructSubscriber, NetworkTable
 import robotpy_apriltag as apriltag
 
 def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
@@ -29,13 +29,10 @@ def fetchRobotPosition(camera) -> tuple[Pose3d, float]:
     return robotPosition, timestamp 
     
 def main():
-    
-    
-    
     # Start NT server
     inst = ntcore.NetworkTableInstance.getDefault()
     inst.setServer(BaseConstants.serverName)
-    if Constants.PhotonLibConstants.robotReal:
+    if PhotonLibConstants.robotReal:
         inst.startClient4("AprilTag")
     else:
         inst.startServer()
@@ -46,7 +43,7 @@ def main():
     reefCamera = ReefCamera(PhotonLibConstants.REEF_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION)
 
 
-    visionTable = inst.getTable("Vision")
+    visionTable: NetworkTable = inst.getTable("Vision")
 
     # Publishers to publish the 2 camera's estimated positions, and the odometry's position
     robotFrontPosePublisher: StructPublisher = visionTable.getStructTopic("FrontRobotPose", Pose3d).publish()
@@ -61,7 +58,11 @@ def main():
     aprilBackCameraTimestampPublisher: DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampBack").publish()
 
     robotPositionFront = None
-    
+
+    coralHitboxes = hitbox.makeCoralHitboxes()
+    algaeHitboxes = hitbox.makeAlgaeHitboxes()
+    coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers = reefCamera.createReefPubSub(visionTable)
+
     while True:
         frontCameraConnection, backCameraConnection, reefCameraConnection = aprilTagCameraFront.isConnected(), aprilTagCameraBack.isConnected(), reefCamera.isConnected()
 
@@ -71,7 +72,7 @@ def main():
 
         
         # Checks if cameras are connected and see April Tags. If they do, publish their estimated positions
-        if Constants.PhotonLibConstants.shouldTestAprilTags:
+        if PhotonLibConstants.shouldTestAprilTags:
             if frontCameraConnection:
                 aprilTagsFront = aprilTagCameraFront.get_tags()
                 if aprilTagsFront:
@@ -104,9 +105,16 @@ def main():
                     else:
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
 
+        
         if PhotonLibConstants.shouldTestCoral:
             if reefCameraConnection:
-                reefCamera.getObjects()
+                coralNetworkTables, algaeNetworkTables = ReefCamera.grabPastReef(coralSubscribers, algaeSubscribers)
+                objectsInFrame = reefCamera.getObjects()
+                robotOdometryPose = odometryRobotPoseSubscriber.get()
+                algaeOnFrame, coralToPublish = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
+
+                # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
+                algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
 
         if keyboard.is_pressed("q"):
             aprilFrontCameraConnectionPublisher.set(False)

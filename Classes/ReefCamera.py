@@ -7,6 +7,7 @@ from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 from wpimath.geometry import Transform3d, Pose2d, Pose3d, Translation3d
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
+from ntcore import BooleanArrayPublisher, StructPublisher, BooleanPublisher, DoublePublisher, StructSubscriber, NetworkTable, BooleanArraySubscriber
 from Vector import vector
 from Hitbox import hitbox
 
@@ -23,7 +24,7 @@ class ReefCamera:
         self.cameraName = cameraName
         self.camera = PhotonCamera(self.cameraName)
         self.cameraTransformation = cameraTransformation
-        self.coralEverSeen = [[False for _ in range(12)] for _ in range(4)] # if a coral has ever been seen before
+        self.algaeNotSeenCounterList = [[0 for _ in range(12)] for _ in range(2)] # if an algae has not been seen for a certain amount of frames, it will be set to false
     
     def isConnected(self):
         return self.camera.isConnected()
@@ -40,7 +41,7 @@ class ReefCamera:
         resultTargets: list[PhotonTrackedTarget] = photonResult.getTargets()
         return resultTargets
     
-    def get2ClosestAlgaeSections(self, algaeHitboxes: list[hitbox], robotPosition: Pose3d) -> tuple[int, int]:
+    def __get2ClosestAlgaeSections(self, algaeHitboxes: list[hitbox], robotPosition: Pose3d) -> tuple[int, int]:
         """
         Returns the indices of each of the closest algae sections to the robot by finding
         their hypotenuses and sorting the list to find the 2 closest sections.
@@ -66,7 +67,121 @@ class ReefCamera:
         closestHitboxIndexes = (unsortedDistances.index(closestDistances[0]), unsortedDistances.index(closestDistances[1]))
         return closestHitboxIndexes
     
+    @staticmethod
+    def publishReefValues(coralTotalList: list[list[bool]], algaeTotalList: list[list[bool]], coralPublishers: list[], algaePublishers: list):
+        """
+        Updates the reef's values on Network Tables
+        """
+
+        for coralLevel, publisher in zip(coralTotalList, coralPublishers):
+            publisher.set(coralLevel)
+
+        for algaeLevel, publisher in zip(algaeTotalList, algaePublishers):
+            publisher.set(algaeLevel)
+        
+        #coralPose3dSeen = []
+
+        # for coralLevel in coralTotalList:
+        #     for coral in coralLevel:
+        #         if coral:
+        #             coralPose3dSeen.append(pose3dCoralValues[coralTotalList.index(coralLevel)][coralLevel.index(coral)])
+            
+        
+        #coralValuesSeenPublisher.set(coralPose3dSeen)
+        
+        #algaePose3dSeen = []
+        
+        # for algaeLevel in algaeTotalList:
+        #     for algae in algaeLevel:
+        #         if algae:
+        #             algaePose3dSeen.append(pose3dAlgaeValues[algaeTotalList.index(algaeLevel)][algaeLevel.index(algae)])
+            
+        #algaeValuesSeenPublisher.set(algaePose3dSeen)
+
+    @staticmethod
+    def grabPastReef(reefSubscribers, algaeSubscribers, coralOnReef: list[list[bool]]) -> tuple[list[list[bool]], list[list[bool]]]:
+        """
+        Grabs the past value of the reef
+        
+        Parameters:
+        reefSubscribers - Subscribers of the reef
+        algaeSubscribers - Subscribers of the algae
+        coralOnReef - Coral found on the reef, used to determine if a coral has been seen before
+
+        Returns:
+        tuple[list[list[bool]], list[list[bool]]] - Returns the current state of the reef coral and algae
+        """
+
+        # Sets the reef coral values to the current state of the reef
+        reefCoral = [[] for _ in range(4)]
+        for level, subscriber in enumerate(reefSubscribers):
+            reefCoral[level] = subscriber.get()
+
+            # Ensures coral will be marked as true if it has been seen at all before
+            for section in range(12):
+                if coralOnReef[level][section]:
+                    reefCoral[level][section] = True
+                else:
+                    reefCoral[level][section] = False
+            
+        reefAlgae = [[] for _ in range(2)]
+        for level, subscriber in enumerate(algaeSubscribers):
+            reefAlgae[level] = subscriber.get()
+
+        return reefCoral, reefAlgae
+
+
+    @staticmethod
+    def createReefPubSub(visionTable: NetworkTable) -> tuple[list[BooleanArraySubscriber], list[BooleanArrayPublisher], list[BooleanArraySubscriber], list[BooleanArrayPublisher]]:
+        """
+        Creates the publishers and subscribers for the reef, including both the algae and coral
+        subscribers and publishers
+
+        Returns:
+        list[list] - List of all of the lists for the publishers and subscribers
+        """
+        # Getting subtables from the vision table and defining the default values for the coral and algae
+        coralTable = visionTable.getSubTable("CoralPositions")
+        algaeTable = visionTable.getSubTable("AlgaePositions")
+        defaultReef = [False for _ in range(12)] # used for 1 level of coral
+        defaultAlgae = [False for _ in range(6)] # used for 1 level of algae
+
+        # Topic creation for the coral and algae
+        reefL1Topic = coralTable.getBooleanArrayTopic("ReefL1")
+        reefL2Topic = coralTable.getBooleanArrayTopic("ReefL2")
+        reefL3Topic = coralTable.getBooleanArrayTopic("ReefL3")
+        reefL4Topic = coralTable.getBooleanArrayTopic("ReefL4")
+        algae1Topic = algaeTable.getBooleanArrayTopic("Algae1")
+        algae2Topic = algaeTable.getBooleanArrayTopic("Algae2")
+
+        # Coral subscribers and publishers
+        coralSubscribers: list[BooleanArraySubscriber] = [reefL1Topic.subscribe(defaultReef), reefL2Topic.subscribe(defaultReef), reefL3Topic.subscribe(defaultReef), reefL4Topic.subscribe(defaultReef)] 
+        coralPublishers: list[BooleanArrayPublisher] = [reefL1Topic.publish(), reefL2Topic.publish(), reefL3Topic.publish(), reefL4Topic.publish()]
+
+        # Algae subscribers and publishers
+        algaeSubscribers: list[BooleanArraySubscriber] = [algae1Topic.subscribe(defaultAlgae), algae2Topic.subscribe(defaultAlgae)]
+        algaePublishers: list[BooleanArrayPublisher] = [algae1Topic.publish(), algae2Topic.publish()]
+
+        # Debug stuff
+        # coralValuesSeenTopic = coralTable.getStructArrayTopic("CoralSeen",Pose3d)
+        # coralValuesSeenPublisher = coralValuesSeenTopic.publish()
+        # algaeValuesSeenTopic = algaeTable.getStructArrayTopic("AlgaeSeen", Pose3d)
+        # algaeValuesSeenPublisher = algaeValuesSeenTopic.publish()
+
+
+        for publisher in coralPublishers:
+            publisher.set([False for _ in range(12)]) 
+        
+        for publisher in algaePublishers:
+            publisher.set([False for _ in range(6)])
+
+        return coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers # coralValuesSeenPublisher, algaeValuesSeenPublisher
+    
+
+    
     def findCoralsAndAlgaesOnReef(self, reefObjectsInView: list[PhotonTrackedTarget], robotOdometryPosition: Pose3d, coralHitboxes: list[hitbox], algaeHitboxes: list[hitbox]):
+        coralEverSeen = [[False for _ in range(12)] for _ in range(4)] # if a coral has ever been seen before
+        algaeOnFrame = [[False for _ in range(6)] for _ in range(2)] # if an algae is on frame
         for object in reefObjectsInView:
             objectType = PhotonLibConstants.OBJECT_IDS[object.objDetectId] # Algae or Coral
             if objectType == 'Coral':
@@ -87,7 +202,7 @@ class ReefCamera:
 
                             # If the Pose3d is colliding with the hitbox, we know which level it is on, so we set that level to true
                             if coralHitboxes[hitboxSection][hitbox].colidePose3d(positionLocation):
-                                self.coralEverSeen[hitboxSection][hitbox] = True
+                                coralEverSeen[hitboxSection][hitbox] = True
                                 vectorAlreadyCollided = True
                                 break
                         if vectorAlreadyCollided:
@@ -100,7 +215,6 @@ class ReefCamera:
                 algaePitch = object.getPitch()
                 algaeYaw = object.getYaw()
                 vectorOfAlgae = vector(robotOdometryPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION), algaePitch, algaeYaw)
-                allIntersectValues = []
 
                 for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                     length = length * 0.05
@@ -115,7 +229,7 @@ class ReefCamera:
                             hitboxSectionIndex = algaeHitboxes.index(hitboxSection)
                             hitboxIndex = hitboxSection.index(hitbox)
                             algaeSeen = hitbox.colidePose3d(positionLocation)
-                            #allIntersectValues.append(algaeSeen)
+                            #allIntersectValues.append(algaeSeen) debug thing
 
                             if algaeSeen:
                                 vectorAlreadyCollided = True
@@ -126,12 +240,13 @@ class ReefCamera:
                             break 
                 if vectorAlreadyCollided:
                     # These values can be used as they are the last ones that existed before the line intercected with a hitbox
-                    
                     vectorAlreadyCollided = False
 
-    def updateAlgaePositions(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
+        return coralEverSeen, algaeOnFrame
+
+    def manageViewedAlgae(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
         # Getting each point on the reef to compare which ones are closest to the robot
-        closestSectionIndexes = self.get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
+        closestSectionIndexes = self.__get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
 
         for level in range(len(algaeOnFrame)): # either 0 or 1
             for algaeSection in range(len(algaeOnFrame)):
@@ -140,16 +255,38 @@ class ReefCamera:
                     algaeNetworkTables[level][closestSectionIndexes[algaeSection]] = True
                     self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] = 0  
                 elif algaeNetworkTables[level][closestSectionIndexes[algaeSection]]: # algae isn't on frame but value is marked as true
-                    self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] += 1
-                else:
-                    algaeNetworkTables[level][closestSectionIndexes[level]] = False
+                    self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] += 1
+                
+                # If the algae is not on frame, has not been seen for a certain amount of frames, and the network table's value for it is still true, set it to false
+                if not isSpecificAlgaeOnFrame and self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] > PhotonLibConstants.ALGAE_VIEWED_TOLERANCE and algaeNetworkTables[level][closestSectionIndexes[algaeSection]]:
+                    algaeNetworkTables[level][closestSectionIndexes[algaeSection]] = False
+                    self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] = 0
 
-                if not isSpecificAlgaeOnFrame and self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and algaeNetworkTables[level][closestSectionIndexes[level]]:
-                    algaeNetworkTables[level][closestSectionIndexes[level]] = False
-                    self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] = 0  
-
-
-                    
         return algaeNetworkTables
+    def updateReef(coralPublishers, algaePublishers, ):
+        """
+        Updates the reef's values on Network Tables
+        """
+
+        coralPose3dSeen = []
+        for coralLevel, publisher in zip(coralTotalList, coralPublishers):
+            publisher.set(coralLevel)
+
+        for coralLevel in coralTotalList:
+            for coral in coralLevel:
+                if coral:
+                    coralPose3dSeen.append(pose3dCoralValues[coralTotalList.index(coralLevel)][coralLevel.index(coral)])
             
-    
+        
+        coralValuesSeenPublisher.set(coralPose3dSeen)
+        
+        algaePose3dSeen = []
+        for algaeLevel, publisher in zip(algaeTotalList, algaePublishers):
+            publisher.set(algaeLevel)
+            
+        for algaeLevel in algaeTotalList:
+            for algae in algaeLevel:
+                if algae:
+                    algaePose3dSeen.append(pose3dAlgaeValues[algaeTotalList.index(algaeLevel)][algaeLevel.index(algae)])
+            
+        algaeValuesSeenPublisher.set(algaePose3dSeen)
