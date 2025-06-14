@@ -7,7 +7,7 @@ class BaseConstants:
 class PhotonLibConstants:
     # Debug values and camera names
     shouldTestAprilTags = False
-    shouldTestCoral = True
+    shouldTestReef = True
     robotReal = True
     APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0"
     APRIL_TAG_BACK_CAMERA_NAME = "AprilTag1"

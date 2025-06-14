@@ -106,15 +106,17 @@ def main():
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
 
         
-        if PhotonLibConstants.shouldTestCoral:
+        if PhotonLibConstants.shouldTestReef:
             if reefCameraConnection:
                 coralNetworkTables, algaeNetworkTables = ReefCamera.grabPastReef(coralSubscribers, algaeSubscribers)
                 objectsInFrame = reefCamera.getObjects()
                 robotOdometryPose = odometryRobotPoseSubscriber.get()
-                algaeOnFrame, coralToPublish = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
+                algaeOnFrame, coralOnFrame = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
 
                 # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
                 algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
+                coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralHitboxes, coralOnFrame, robotOdometryPose)
+                reefCamera.updateReef(coralPublishers, algaePublishers, coralToPublish, algaeToPublish)
 
         if keyboard.is_pressed("q"):
             aprilFrontCameraConnectionPublisher.set(False)
