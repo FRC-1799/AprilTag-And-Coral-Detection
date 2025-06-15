@@ -32,3 +32,6 @@ class PhotonLibConstants:
     REEF_Y_TOLERANCE = 1
     ALGAE_VIEWED_TOLERANCE = 100 # frames
 
+    CORAL_RADIUS = 0.3 # meters
+    ALGAE_RADIUS = 0.203 # meters
+

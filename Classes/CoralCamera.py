@@ -1,4 +1,4 @@
-from ConstantsAndUtils.Constants import CoralAndAlgaeCameraConstants
+from ConstantsAndUtils.Constants import PhotonLibConstants
 import cv2
 from ultralytics import YOLO
 import math
@@ -18,8 +18,8 @@ class CoralCamera:
         self.cameraIndex = cameraIndex
         
         self.model = YOLO(modelPath)
-        self.screenWidth = CoralAndAlgaeCameraConstants.horizontalPixels
-        self.screenHeight = CoralAndAlgaeCameraConstants.verticalPixels
+        self.screenWidth = PhotonLibConstants.horizontalPixels
+        self.screenHeight = PhotonLibConstants.verticalPixels
         self.camera = cv2.VideoCapture(self.cameraIndex)
         self.coralEverSeen = [[False for _ in range(12)] for _ in range(4)]
         self.algaeNotSeenCounterList = [[0 for _ in range(6)] for _ in range(2)]
@@ -68,8 +68,8 @@ class CoralCamera:
                     
                     conf = box.conf[0].item()
                     cls = int(box.cls[0].item())
-                    if self.model.names[cls].lower() == "coral" and CoralAndAlgaeCameraConstants.shouldTestCoral:
-                        if conf > CoralAndAlgaeCameraConstants.coralConfidenceTolerance:
+                    if self.model.names[cls].lower() == "coral" and PhotonLibConstants.shouldTestCoral:
+                        if conf > PhotonLibConstants.coralConfidenceTolerance:
 
 
                             # Top left X, top left Y, bottom right X, bottom right Y
@@ -77,20 +77,20 @@ class CoralCamera:
                             
 
                             centerOfCoral = ((x2 - x1) / 2 + x1, (y2 - y1) / 2 + y1) 
-                            coralYaw = CoralAndAlgaeCameraConstants.reefCameraHorizontalAnglePerPixel * centerOfCoral[0]
-                            coralPitch = CoralAndAlgaeCameraConstants.reefCameraVerticalAnglePerPixel * centerOfCoral[1]
+                            coralYaw = PhotonLibConstants.reefCameraHorizontalAnglePerPixel * centerOfCoral[0]
+                            coralPitch = PhotonLibConstants.reefCameraVerticalAnglePerPixel * centerOfCoral[1]
 
-                            centerYaw = CoralAndAlgaeCameraConstants.reefCameraHorizontalAnglePerPixel * (self.screenWidth / 2)
-                            centerPitch = CoralAndAlgaeCameraConstants.reefCameraVerticalAnglePerPixel * (self.screenHeight / 2) + math.radians(10)
+                            centerYaw = PhotonLibConstants.reefCameraHorizontalAnglePerPixel * (self.screenWidth / 2)
+                            centerPitch = PhotonLibConstants.reefCameraVerticalAnglePerPixel * (self.screenHeight / 2) + math.radians(10)
 
                             # Adjusts the pitch and yaw so that its center (0, 0) is in the middle of the camera lens
                             coralYaw = -(coralYaw - centerYaw)
                             coralPitch = (coralPitch - centerPitch)
 
-                            vectorOfCoral = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), coralPitch, coralYaw)
+                            vectorOfCoral = Vector.vector(robotPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), coralPitch, coralYaw)
 
                             # Loops again for a certain increment across the line, and the increment acts as the x value for the equation
-                            for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
+                            for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                                 length = length * 0.05
                                 positionLocation = vectorOfCoral.getPoseAtStep(length)
                                 #self.allPositions.append(positionLocation)
@@ -114,25 +114,25 @@ class CoralCamera:
 
                             
                     
-                    elif self.model.names[cls].lower() == "algae" and CoralAndAlgaeCameraConstants.shouldTestAlgae:
-                        if conf > CoralAndAlgaeCameraConstants.coralConfidenceTolerance:
+                    elif self.model.names[cls].lower() == "algae" and PhotonLibConstants.shouldTestAlgae:
+                        if conf > PhotonLibConstants.coralConfidenceTolerance:
                             x1, y1, x2, y2 = map(int, box.xyxy[0])
                         
                             centerOfAlgae = ((x2 - x1) / 2 + x1, (y2 - y1) / 2 + y1) 
-                            algaeYaw = CoralAndAlgaeCameraConstants.reefCameraHorizontalAnglePerPixel * centerOfAlgae[0]
-                            algaePitch = CoralAndAlgaeCameraConstants.reefCameraVerticalAnglePerPixel * centerOfAlgae[1]
+                            algaeYaw = PhotonLibConstants.reefCameraHorizontalAnglePerPixel * centerOfAlgae[0]
+                            algaePitch = PhotonLibConstants.reefCameraVerticalAnglePerPixel * centerOfAlgae[1]
 
-                            centerYaw = CoralAndAlgaeCameraConstants.reefCameraHorizontalAnglePerPixel * (self.screenWidth / 2)
-                            centerPitch = CoralAndAlgaeCameraConstants.reefCameraVerticalAnglePerPixel * (self.screenHeight / 2)
+                            centerYaw = PhotonLibConstants.reefCameraHorizontalAnglePerPixel * (self.screenWidth / 2)
+                            centerPitch = PhotonLibConstants.reefCameraVerticalAnglePerPixel * (self.screenHeight / 2)
 
                             # Adjusts the pitch and yaw so that its center (0, 0) is in the middle of the camera lens
                             algaeYaw = -(algaeYaw - centerYaw)
                             algaePitch = (algaePitch - centerPitch)
 
-                            vectorOfAlgae = Vector.vector(robotPosition.transformBy(CoralAndAlgaeCameraConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), algaePitch, algaeYaw)
+                            vectorOfAlgae = Vector.vector(robotPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_ROTATED_TRANSFORMATION2D), algaePitch, algaeYaw)
                             allIntersectValues = []
 
-                            for length in range(1, CoralAndAlgaeCameraConstants.vectorLengthToExtend):
+                            for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                                 length = length * 0.05
                                 positionLocation = vectorOfAlgae.getPoseAtStep(length)
                                 self.allPositions.append(positionLocation) # debug purposes with vector line
@@ -166,7 +166,7 @@ class CoralCamera:
                                 
 
                                     #     # If we haven't seen the algae for more than the tolerance frames, it is not seen right now, and it is marked as true, then assume it isn't there anymore
-                                    #     if algaeNotSeenCounter[hitboxSectionIndex][hitboxIndex] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and not algaeSeen and algae[hitboxSectionIndex][hitboxIndex]:
+                                    #     if algaeNotSeenCounter[hitboxSectionIndex][hitboxIndex] > PhotonLibConstants.algaeViewedTolerance and not algaeSeen and algae[hitboxSectionIndex][hitboxIndex]:
                                     #         algae[hitboxSectionIndex][hitboxIndex] = False
                                         
                                     #     # If we do see the algae and it is false, mark it as true
@@ -243,7 +243,7 @@ class CoralCamera:
             else:
                 algaeNetworkTables[level][closestSectionIndexes[level]] = False
 
-            if not specificAlgaeOnFrame and self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and algaeNetworkTables[level][closestSectionIndexes[level]]:
+            if not specificAlgaeOnFrame and self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] > PhotonLibConstants.algaeViewedTolerance and algaeNetworkTables[level][closestSectionIndexes[level]]:
                 algaeNetworkTables[level][closestSectionIndexes[level]] = False
                 self.algaeNotSeenCounterList[level][closestSectionIndexes[level]] = 0  
 
@@ -277,7 +277,7 @@ class CoralCamera:
         #             print(self.algaeNotSeenCounterList)
         #             self.algaeNotSeenCounterList[actualLevelIndex][actualSectionIndex] = 0
 
-        #         shouldMarkAsFalse = section[levelIndex] and self.algaeNotSeenCounterList[actualSectionIndex][actualLevelIndex] > CoralAndAlgaeCameraConstants.algaeViewedTolerance and not algaeCurrentlySeen
+        #         shouldMarkAsFalse = section[levelIndex] and self.algaeNotSeenCounterList[actualSectionIndex][actualLevelIndex] > PhotonLibConstants.algaeViewedTolerance and not algaeCurrentlySeen
         #         if shouldMarkAsFalse:
         #             algaeLevelsToSection[actualSectionIndex][actualLevelIndex] = False
         #             self.algaeNotSeenCounterList[actualSectionIndex][actualLevelIndex] = 0

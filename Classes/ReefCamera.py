@@ -3,8 +3,8 @@ from photonlibpy.photonCamera import PhotonCamera
 from wpimath.geometry import Transform3d, Pose3d
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget # Remove ".targeting" from the import path if not on orange pi
 from ntcore import BooleanArrayPublisher, BooleanPublisher, NetworkTable, BooleanArraySubscriber
-from Vector import vector
-from Hitbox import hitbox
+from Classes.Vector import vector
+from Classes.Hitbox import hitbox
 
 class ReefCamera:
     def __init__(self, cameraName: str, cameraTransformation: Transform3d):
@@ -36,7 +36,7 @@ class ReefCamera:
         resultTargets: list[PhotonTrackedTarget] = photonResult.getTargets()
         return resultTargets
     
-    def __get2ClosestAlgaeSections(self, algaeHitboxes: list[hitbox], robotPosition: Pose3d) -> tuple[int, int]:
+    def __get2ClosestAlgaeSections(self, algaeHitboxes: list[list[hitbox]], robotPosition: Pose3d) -> tuple[int, int]:
         """
         Returns the indices of each of the closest algae sections to the robot by finding
         their hypotenuses and sorting the list to find the 2 closest sections.
@@ -47,6 +47,7 @@ class ReefCamera:
         """
 
         distancesFromSections = []
+        print(algaeHitboxes[0][0])
         xyPosesForSections = [(algaeHitboxes[0][i].getPose().X(), algaeHitboxes[1][i].getPose().Y()) for i in range(len(algaeHitboxes[0]))]
         
         for poses in xyPosesForSections:
@@ -177,6 +178,7 @@ class ReefCamera:
                 coralPitch = object.getPitch()
 
                 vectorOfCoral = vector(robotOdometryPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION), coralPitch, coralYaw)
+                vectorAlreadyCollided = False
                 # Loops again for a certain increment across the line, and the increment acts as the x value for the equation
                 for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                     length = length * 0.05
@@ -203,6 +205,7 @@ class ReefCamera:
                 algaePitch = object.getPitch()
                 algaeYaw = object.getYaw()
                 vectorOfAlgae = vector(robotOdometryPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION), algaePitch, algaeYaw)
+                vectorAlreadyCollided = False
 
                 for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                     length = length * 0.05

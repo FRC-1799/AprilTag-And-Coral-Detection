@@ -2,7 +2,7 @@ from typing import Self
 from wpimath.geometry import Pose3d, Rotation3d, Translation2d, Rotation2d, Translation3d, Transform3d
 from wpimath.units import degreesToRadians
 from ConstantsAndUtils import FieldMirroringUtils
-from ConstantsAndUtils.Constants import CoralAndAlgaeCameraConstants
+from ConstantsAndUtils.Constants import PhotonLibConstants
 import math
 
 def addTranslation2ds(translation1: Translation2d, translation2: Translation2d):
@@ -63,10 +63,10 @@ class hitbox:
         for i in range(4):
             for j in range(12):
                 transformedPose = blueStarts[j].transformBy(editTran[i])
-                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.coralRadius)
+                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, PhotonLibConstants.CORAL_RADIUS)
                 pose3dList[i][j] = transformedPose
             
-        return blueHitboxes, pose3dList
+        return blueHitboxes # , pose3dList
     
     @staticmethod
     def makeAlgaeHitboxes():
@@ -92,7 +92,7 @@ class hitbox:
         for i in range(2):
             for j in range(6):
                 transformedPose = blueStarts[j].transformBy(editTran[i])
-                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, CoralAndAlgaeCameraConstants.algaeRadius)
+                blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, PhotonLibConstants.ALGAE_RADIUS)
                 pose3dList[i][j] = transformedPose
             
-        return blueHitboxes, pose3dList 
+        return blueHitboxes # , pose3dList 

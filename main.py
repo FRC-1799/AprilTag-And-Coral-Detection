@@ -33,7 +33,7 @@ def main():
     inst = ntcore.NetworkTableInstance.getDefault()
     inst.setServer(BaseConstants.serverName)
     if PhotonLibConstants.robotReal:
-        inst.startClient4("AprilTag")
+        inst.startClient4("ReefAprilTagCamera")
     else:
         inst.startServer()
 
@@ -110,13 +110,14 @@ def main():
             if reefCameraConnection:
                 coralNetworkTables, algaeNetworkTables = ReefCamera.grabPastReef(coralSubscribers, algaeSubscribers)
                 objectsInFrame = reefCamera.getObjects()
-                robotOdometryPose = odometryRobotPoseSubscriber.get()
-                algaeOnFrame, coralOnFrame = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
+                if objectsInFrame:
+                    robotOdometryPose = odometryRobotPoseSubscriber.get()
+                    algaeOnFrame, coralOnFrame = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
 
-                # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
-                algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
-                coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralHitboxes, coralOnFrame, robotOdometryPose)
-                reefCamera.updateReef(coralPublishers, algaePublishers, coralToPublish, algaeToPublish)
+                    # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
+                    algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
+                    coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralHitboxes, coralOnFrame, robotOdometryPose)
+                    reefCamera.updateReef(coralPublishers, algaePublishers, coralToPublish, algaeToPublish)
 
         if keyboard.is_pressed("q"):
             aprilFrontCameraConnectionPublisher.set(False)
