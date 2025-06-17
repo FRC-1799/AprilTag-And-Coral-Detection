@@ -116,7 +116,7 @@ def main():
 
                     # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
                     algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
-                    coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralHitboxes, coralOnFrame, robotOdometryPose)
+                    coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralOnFrame)
                     reefCamera.updateReef(coralPublishers, algaePublishers, coralToPublish, algaeToPublish)
 
         if keyboard.is_pressed("q"):

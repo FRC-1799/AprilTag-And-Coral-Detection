@@ -233,7 +233,7 @@ class ReefCamera:
                     # These values can be used as they are the last ones that existed before the line intercected with a hitbox
                     vectorAlreadyCollided = False
 
-        return coralEverSeen, algaeOnFrame
+        return algaeOnFrame,coralEverSeen
 
     def manageViewedAlgae(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
         # Getting each point on the reef to compare which ones are closest to the robot
@@ -242,6 +242,7 @@ class ReefCamera:
         for level in range(len(algaeOnFrame)): # either 0 or 1, corrisponding to L2 and L3 algae
             for algaeSection in closestSectionIndexes:
                 isSpecificAlgaeOnFrame = algaeOnFrame[level][algaeSection] # level 0 or 1 and the section closest to the robot
+                print(algaeOnFrame)
                 if isSpecificAlgaeOnFrame:
                     algaeNetworkTables[level][algaeSection] = True
                     self.algaeNotSeenCounterList[level][algaeSection] = 0  
@@ -273,7 +274,7 @@ class ReefCamera:
 
         return coralNetworkTables
 
-    def updateReef(coralPublishers: list[BooleanArrayPublisher], algaePublishers: list[BooleanArrayPublisher], coralToPublish: list[list[bool]], algaeToPublish: list[list[bool]]):
+    def updateReef(self, coralPublishers: list[BooleanArrayPublisher], algaePublishers: list[BooleanArrayPublisher], coralToPublish: list[list[bool]], algaeToPublish: list[list[bool]]):
         """
         Updates the reef's values on Network Tables
         """
