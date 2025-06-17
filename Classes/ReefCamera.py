@@ -239,19 +239,19 @@ class ReefCamera:
         # Getting each point on the reef to compare which ones are closest to the robot
         closestSectionIndexes = self.__get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
 
-        for level in range(len(algaeOnFrame)): # either 0 or 1
-            for algaeSection in range(len(algaeOnFrame)):
-                isSpecificAlgaeOnFrame = algaeOnFrame[level][closestSectionIndexes[algaeSection]] # level 0 or 1 and the section closest to the robot
+        for level in range(len(algaeOnFrame)): # either 0 or 1, corrisponding to L2 and L3 algae
+            for algaeSection in closestSectionIndexes:
+                isSpecificAlgaeOnFrame = algaeOnFrame[level][algaeSection] # level 0 or 1 and the section closest to the robot
                 if isSpecificAlgaeOnFrame:
-                    algaeNetworkTables[level][closestSectionIndexes[algaeSection]] = True
-                    self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] = 0  
-                elif algaeNetworkTables[level][closestSectionIndexes[algaeSection]]: # algae isn't on frame but value is marked as true
-                    self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] += 1
+                    algaeNetworkTables[level][algaeSection] = True
+                    self.algaeNotSeenCounterList[level][algaeSection] = 0  
+                elif algaeNetworkTables[level][algaeSection]: # algae isn't on frame but value is marked as true
+                    self.algaeNotSeenCounterList[level][algaeSection] += 1
                 
                 # If the algae is not on frame, has not been seen for a certain amount of frames, and the network table's value for it is still true, set it to false
-                if not isSpecificAlgaeOnFrame and self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] > PhotonLibConstants.ALGAE_VIEWED_TOLERANCE and algaeNetworkTables[level][closestSectionIndexes[algaeSection]]:
-                    algaeNetworkTables[level][closestSectionIndexes[algaeSection]] = False
-                    self.algaeNotSeenCounterList[level][closestSectionIndexes[algaeSection]] = 0
+                if not isSpecificAlgaeOnFrame and self.algaeNotSeenCounterList[level][algaeSection] > PhotonLibConstants.ALGAE_VIEWED_TOLERANCE and algaeNetworkTables[level][algaeSection]:
+                    algaeNetworkTables[level][algaeSection] = False
+                    self.algaeNotSeenCounterList[level][algaeSection] = 0
 
         return algaeNetworkTables
     

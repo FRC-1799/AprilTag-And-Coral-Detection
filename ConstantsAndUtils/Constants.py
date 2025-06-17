@@ -35,3 +35,15 @@ class PhotonLibConstants:
     CORAL_RADIUS = 0.3 # meters
     ALGAE_RADIUS = 0.203 # meters
 
+# Algae and Coral Shapes for debugging
+algae = [
+    [False, False, False, False, False, False], # L2 algae
+    [False, False, False, False, False, False]  # L3 algae
+]
+
+coral = [
+    [False, False, False, False, False, False, False, False, False, False, False, False], # L1
+    [False, False, False, False, False, False, False, False, False, False, False, False], # L2
+    [False, False, False, False, False, False, False, False, False, False, False, False], # L3
+    [False, False, False, False, False, False, False, False, False, False, False, False]  # L4
+]
