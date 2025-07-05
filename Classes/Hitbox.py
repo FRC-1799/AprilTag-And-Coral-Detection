@@ -59,14 +59,14 @@ class hitbox:
             Transform3d(Translation3d(-0.3, 0, 1.78), Rotation3d.fromDegrees(0, 90, 0))
         ]
 
-        pose3dList = [[None for _ in range(12)] for _ in range(4)] # for testing where it thinks coral is
+        coralHitboxLocations = [] # for testing, places coral hitboxes. Not in the normal shape bc it isnt required for testing
         for i in range(4):
             for j in range(12):
                 transformedPose = blueStarts[j].transformBy(editTran[i])
                 blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, PhotonLibConstants.CORAL_RADIUS)
-                pose3dList[i][j] = transformedPose
+                coralHitboxLocations.append(transformedPose)
             
-        return blueHitboxes # , pose3dList
+        return blueHitboxes, coralHitboxLocations
     
     @staticmethod
     def makeAlgaeHitboxes():
@@ -87,12 +87,12 @@ class hitbox:
             Transform3d(Translation3d(0, 0, 1.3), Rotation3d.fromDegrees(0, 0, 0))
         ]
 
-        pose3dList = [[None for _ in range(6)] for _ in range(2)] # for testing where it thinks algae is
+        algaeHitboxLocations = [] # for testing, places algae hitboxes. Not in the normal shape bc it isnt required for testing
 
         for i in range(2):
             for j in range(6):
                 transformedPose = blueStarts[j].transformBy(editTran[i])
                 blueHitboxes[i][j] = hitbox.hitboxFromPose3d(transformedPose, PhotonLibConstants.ALGAE_RADIUS)
-                pose3dList[i][j] = transformedPose
+                algaeHitboxLocations.append(transformedPose)
             
-        return blueHitboxes # , pose3dList 
+        return blueHitboxes, algaeHitboxLocations 

@@ -1,4 +1,4 @@
-from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d, Pose3d, Transform2d
+from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d, Pose3d, Transform2d, Translation3d
 import math
 
 class BaseConstants:
@@ -34,6 +34,8 @@ class PhotonLibConstants:
 
     CORAL_RADIUS = 0.3 # meters
     ALGAE_RADIUS = 0.203 # meters
+
+    DEFAULT_ROBOT_POSE = Pose3d(Translation3d(2, 4, 0), Rotation3d(0, 0, 0))
 
 # Algae and Coral Shapes for debugging
 algae = [

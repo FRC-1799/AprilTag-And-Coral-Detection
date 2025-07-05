@@ -5,6 +5,7 @@ from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget # Remo
 from ntcore import BooleanArrayPublisher, BooleanPublisher, NetworkTable, BooleanArraySubscriber
 from Classes.Vector import vector
 from Classes.Hitbox import hitbox
+from math import radians
 
 class ReefCamera:
     def __init__(self, cameraName: str, cameraTransformation: Transform3d):
@@ -20,7 +21,8 @@ class ReefCamera:
         self.camera = PhotonCamera(self.cameraName)
         self.cameraTransformation = cameraTransformation
         self.algaeNotSeenCounterList = [[0 for _ in range(12)] for _ in range(2)] # if an algae has not been seen for a certain amount of frames, it will be set to false
-    
+        self.allPositions = []
+
     def isConnected(self):
         return self.camera.isConnected()
 
@@ -47,7 +49,6 @@ class ReefCamera:
         """
 
         distancesFromSections = []
-        print(algaeHitboxes[0][0])
         xyPosesForSections = [(algaeHitboxes[0][i].getPose().X(), algaeHitboxes[1][i].getPose().Y()) for i in range(len(algaeHitboxes[0]))]
         
         for poses in xyPosesForSections:
@@ -174,16 +175,17 @@ class ReefCamera:
         for object in reefObjectsInView:
             objectType = PhotonLibConstants.OBJECT_IDS[object.objDetectId] # Algae or Coral
             if objectType == 'Coral':
-                coralYaw = object.getYaw()
-                coralPitch = object.getPitch()
+                coralYaw = radians(object.getYaw())
+                coralPitch = -radians(object.getPitch())
 
                 vectorOfCoral = vector(robotOdometryPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION), coralPitch, coralYaw)
                 vectorAlreadyCollided = False
+                self.allPositions = []
                 # Loops again for a certain increment across the line, and the increment acts as the x value for the equation
                 for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                     length = length * 0.05
                     positionLocation = vectorOfCoral.getPoseAtStep(length)
-                    #self.allPositions.append(positionLocation)
+                    self.allPositions.append(positionLocation)
                     if vectorAlreadyCollided:
                         break
                     
@@ -202,15 +204,15 @@ class ReefCamera:
                 vectorAlreadyCollided = False 
 
             if objectType == "Algae":
-                algaePitch = object.getPitch()
-                algaeYaw = object.getYaw()
+                algaePitch = -radians(object.getPitch())
+                algaeYaw = -radians(object.getYaw())
                 vectorOfAlgae = vector(robotOdometryPosition.transformBy(PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION), algaePitch, algaeYaw)
                 vectorAlreadyCollided = False
-
+                self.allPositions = []
                 for length in range(1, PhotonLibConstants.vectorLengthToExtend):
                     length = length * 0.05
                     positionLocation = vectorOfAlgae.getPoseAtStep(length)
-                    #self.allPositions.append(positionLocation) # debug purposes with vector line
+                    self.allPositions.append(positionLocation) # debug purposes with vector line
                     if vectorAlreadyCollided:
                         break
                     
@@ -233,6 +235,7 @@ class ReefCamera:
                     # These values can be used as they are the last ones that existed before the line intercected with a hitbox
                     vectorAlreadyCollided = False
 
+        
         return algaeOnFrame,coralEverSeen
 
     def manageViewedAlgae(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
@@ -242,7 +245,6 @@ class ReefCamera:
         for level in range(len(algaeOnFrame)): # either 0 or 1, corrisponding to L2 and L3 algae
             for algaeSection in closestSectionIndexes:
                 isSpecificAlgaeOnFrame = algaeOnFrame[level][algaeSection] # level 0 or 1 and the section closest to the robot
-                print(algaeOnFrame)
                 if isSpecificAlgaeOnFrame:
                     algaeNetworkTables[level][algaeSection] = True
                     self.algaeNotSeenCounterList[level][algaeSection] = 0  

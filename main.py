@@ -48,7 +48,7 @@ def main():
     # Publishers to publish the 2 camera's estimated positions, and the odometry's position
     robotFrontPosePublisher: StructPublisher = visionTable.getStructTopic("FrontRobotPose", Pose3d).publish()
     robotBackPosePublisher: StructPublisher = visionTable.getStructTopic("BackRobotPose", Pose3d).publish()
-    odometryRobotPoseSubscriber: StructSubscriber = inst.getStructTopic("RobotPose", Pose3d).subscribe(Pose3d(), ntcore.PubSubOptions(keepDuplicates=True))
+    odometryRobotPoseSubscriber: StructSubscriber = inst.getStructTopic("RobotPose", Pose3d).subscribe(PhotonLibConstants.DEFAULT_ROBOT_POSE, ntcore.PubSubOptions(keepDuplicates=True))
 
     # Camera connection statuses and timestamps for debugging
     aprilFrontCameraConnectionPublisher: BooleanPublisher = visionTable.getBooleanTopic("FrontCameraConnection").publish()
@@ -58,10 +58,20 @@ def main():
     aprilBackCameraTimestampPublisher: DoublePublisher = inst.getDoubleTopic("RobotPoseTimestampBack").publish()
 
     robotPositionFront = None
-
-    coralHitboxes = hitbox.makeCoralHitboxes()
-    algaeHitboxes = hitbox.makeAlgaeHitboxes()
+    
+    # Hitboxes, publishers and subscribers made here
+    coralHitboxes, coralHitboxLocations = hitbox.makeCoralHitboxes()
+    algaeHitboxes, algaeHitboxLocations = hitbox.makeAlgaeHitboxes()
     coralSubscribers, coralPublishers, algaeSubscribers, algaePublishers = reefCamera.createReefPubSub(visionTable)
+
+    # Debug topics, publishers and subscribers
+    vectorPose3dsPublisher = visionTable.getStructArrayTopic("VectorPose3ds", Pose3d).publish()
+    coralHitboxLocationsPublisher = visionTable.getStructArrayTopic("CoralHitboxLocations", Pose3d).publish()
+    algaeHitboxLocationsPublisher = visionTable.getStructArrayTopic("AlgaeHitboxLocations", Pose3d).publish()
+    odometryRobotPosePublisher = inst.getStructTopic("RobotPose", Pose3d).publish()
+    coralHitboxLocationsPublisher.set(coralHitboxLocations)
+    algaeHitboxLocationsPublisher.set(algaeHitboxLocations)
+    odometryRobotPosePublisher.set(PhotonLibConstants.DEFAULT_ROBOT_POSE) 
 
     while True:
         frontCameraConnection, backCameraConnection, reefCameraConnection = aprilTagCameraFront.isConnected(), aprilTagCameraBack.isConnected(), reefCamera.isConnected()
@@ -109,15 +119,19 @@ def main():
         if PhotonLibConstants.shouldTestReef:
             if reefCameraConnection:
                 coralNetworkTables, algaeNetworkTables = ReefCamera.grabPastReef(coralSubscribers, algaeSubscribers)
+                robotOdometryPose = odometryRobotPoseSubscriber.get()
                 objectsInFrame = reefCamera.getObjects()
-                if objectsInFrame:
-                    robotOdometryPose = odometryRobotPoseSubscriber.get()
-                    algaeOnFrame, coralOnFrame = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
+                algaeOnFrame, coralOnFrame = reefCamera.findCoralsAndAlgaesOnReef(objectsInFrame, robotOdometryPose, coralHitboxes, algaeHitboxes)
 
-                    # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
-                    algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
-                    coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralOnFrame)
-                    reefCamera.updateReef(coralPublishers, algaePublishers, coralToPublish, algaeToPublish)
+                # Only updates the 2 closest reef sections. This is not done with coral, so change if needed
+                algaeToPublish = reefCamera.manageViewedAlgae(algaeNetworkTables, algaeHitboxes, algaeOnFrame, robotOdometryPose)
+                coralToPublish = reefCamera.manageViewedCorals(coralNetworkTables, coralOnFrame)
+                reefCamera.updateReef(coralPublishers, algaePublishers, coralToPublish, algaeToPublish)
+
+                # Debug stuff here
+                vectorPose3dsPublisher.set(reefCamera.allPositions)
+                    
+
 
         if keyboard.is_pressed("q"):
             aprilFrontCameraConnectionPublisher.set(False)
