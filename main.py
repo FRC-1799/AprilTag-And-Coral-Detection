@@ -10,7 +10,7 @@ import keyboard
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from ConstantsAndUtils import FieldMirroringUtils
-from ntcore import StructPublisher, BooleanPublisher, DoublePublisher, StructSubscriber, NetworkTable
+from ntcore import StructPublisher, BooleanPublisher, DoublePublisher, StructSubscriber, NetworkTable, PubSubOptions
 import robotpy_apriltag as apriltag
 
 def fetchRobotPosition(camera) -> tuple[Pose3d, float]:

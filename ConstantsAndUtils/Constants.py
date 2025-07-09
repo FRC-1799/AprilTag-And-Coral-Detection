@@ -2,7 +2,7 @@ from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d,
 import math
 
 class BaseConstants:
-    serverName = "localhost"
+    serverName = "127.0.0.1"
 
 class PhotonLibConstants:
     # Debug values and camera names
