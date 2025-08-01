@@ -6,10 +6,12 @@ from ConstantsAndUtils.Constants import PhotonLibConstants
 import math
 
 def addTranslation2ds(translation1: Translation2d, translation2: Translation2d):
+    """
+    Add Translation 2ds to each other
+    """
     return Translation2d(translation1.X() + translation2.X(), translation1.Y() + translation2.Y())
 
 class hitbox:
-
     def __init__(self, x: float, y:float, z:float, r:float, roll=0, pitch=0, yaw=0):
         self.x, self.y, self.z, self.r, self.roll, self.pitch, self.yaw = x, y, z, r, roll, pitch, yaw
 

@@ -13,8 +13,8 @@ class ReefCamera:
         When initialized, a PhotonCamera will be created. This will be used to detect coral and algae
 
         Parameters:
-        cameraName  (str): Name of a camera in String format. Used to find which camera is being used in Photon Vision.
-        cameraType (str): Optional Parameter that is what the camera will be doing. If it is detecting April Tags, pass Pose in for it, and leave the parameter blank if it is detecting objects.
+        cameraName: Name of a camera in String format. Used to find which camera is being used in Photon Vision.
+        cameraTransformation: Transformation from the robot's base to the camera.
         """
 
         self.cameraName = cameraName
@@ -128,6 +128,9 @@ class ReefCamera:
         Creates the publishers and subscribers for the reef, including both the algae and coral
         subscribers and publishers
 
+        Parameters:
+        visionTable: Subtable on the NetworkTable to publish algae and coral values to.
+
         Returns:
         list[list] - List of all of the lists for the publishers and subscribers
         """
@@ -171,6 +174,22 @@ class ReefCamera:
 
     
     def findCoralsAndAlgaesOnReef(self, reefObjectsInView: list[PhotonTrackedTarget], robotOdometryPosition: Pose3d, coralHitboxes: list[list[hitbox]], algaeHitboxes: list[list[hitbox]]) -> tuple[list[list[bool]], list[list[bool]]]:
+        """
+        Uses the object's (coral or algae's) pitch and yaw to determine whether said object is in a
+        location by checking if the object's vector collides with a hitbox surrounding each coral
+        and algae's position (L1, L2, L3, L4 for coral, or L2, L3 for algae).
+
+        Parameters: 
+        reefObjectsInView: Objects seen by the camera 
+        robotOdometryPosition: Position of the robot based on robot-side calculation 
+        coralHitboxes: List of hitboxes surrounding the coral locations 
+        algaeHitboxes: List of hitboxes surrounding the algae locations
+
+        Returns: 
+        tuple[list[list[bool]], list[list[bool]]]: Tuple of both the coral and algae
+        positions: (coralPositions, algaePositions)
+        """
+        
         coralEverSeen = [[False for _ in range(12)] for _ in range(4)] # if a coral has ever been seen before
         algaeOnFrame = [[False for _ in range(6)] for _ in range(2)] # if an algae is on frame
         for object in reefObjectsInView:
@@ -239,7 +258,27 @@ class ReefCamera:
         
         return algaeOnFrame,coralEverSeen
 
-    def manageViewedAlgae(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d):
+    def manageViewedAlgae(self, algaeNetworkTables: list[list[bool]], algaeHitboxes: list[list[hitbox]], algaeOnFrame: list[list[bool]], robotPosition: Pose3d) -> list[list[bool]]:
+        """
+        Manages the algae seen by the camera. Only algae that are located on the 2 closest algae
+        sections will be handled Comments on individual lines help to understand this better, but if
+        an algae is seen, we mark it's position as True. If it is not seen, and is marked as False
+        on the algaeNetworkTables' list, keep it as False. If it is not seen, but it is marked as
+        True, then it starts a counter. This counter will determine when the algae should be marked
+        as False, i.e. when it has been removed by a teammate. If this counter reaches the
+        ALGAE_VIEWED_TOLERANCE, it will then be marked as False.
+
+        Parameters: 
+        algaeNetworkTables: States (True or False) of each algaeLocations according to
+        published network table values 
+        algaeHitboxes: Hitboxes surrounding the locations of where algae could be
+        algaeOnFrame: If algae at certain posiitons are currently being seen or not
+        robotPosition: Position of the robot, given by robot-side calculation of odometry
+
+        Returns:
+        list[list[bool]]: The correct algae values that should be published to Network Tables
+        """
+        
         # Getting each point on the reef to compare which ones are closest to the robot
         closestSectionIndexes = self.__get2ClosestAlgaeSections(algaeHitboxes, robotPosition)
 
@@ -279,7 +318,15 @@ class ReefCamera:
 
     def updateReef(self, coralPublishers: list[BooleanArrayPublisher], algaePublishers: list[BooleanArrayPublisher], coralToPublish: list[list[bool]], algaeToPublish: list[list[bool]]):
         """
-        Updates the reef's values on Network Tables
+        Updates the reef's values on Network Tables. Also includes some debug code that may or may
+        not be commented out
+
+        Parameters: 
+        coralPublishers: Publishers that will publish correct Coral values to Network
+        Tables 
+        algaePublishers: Publishers that will publish correct Algae values to Network Tables
+        coralToPublish: Coral values that should be published to Network Tables 
+        algaeToPublish: Algae values that should be published to Network Tables
         """
 
         for coralLevel, publisher in zip(coralToPublish, coralPublishers):

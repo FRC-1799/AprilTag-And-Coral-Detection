@@ -1,5 +1,4 @@
 from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d, Pose3d, Transform2d, Translation3d
-import math
 
 class BaseConstants:
     serverName = "127.0.0.1"

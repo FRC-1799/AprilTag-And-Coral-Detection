@@ -5,18 +5,20 @@ from photonlibpy.estimatedRobotPose import EstimatedRobotPose
 from photonlibpy.photonCamera import PhotonCamera
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 from wpimath.geometry import Transform3d, Pose2d, Pose3d, Translation3d
-#from photonlibpy.photonTrackedTarget import TargetCorner
 
 
 class AprilTagCamera:
 
     def __init__(self, cameraName: str, cameraTransformation: Transform3d, aprilTagField: apriltag.AprilTagFieldLayout):
         """
-        When initialized, a PhotonCamera will be created, along with a PhotonPoseEstimator if the camera being passed is supposed to detect April Tags.
+        When initialized, a PhotonCamera will be created, along with a PhotonPoseEstimator if the
+        camera being passed is supposed to detect April Tags.
 
-        Parameters:
-        cameraName  (str): Name of a camera in String format. Used to find which camera is being used in Photon Vision.
-        cameraType (str): Optional Parameter that is what the camera will be doing. If it is detecting April Tags, pass Pose in for it, and leave the parameter blank if it is detecting objects.
+        Parameters: 
+        cameraName: Name of a camera in String format. Used to find which camera is
+        being used in Photon Vision. 
+        cameraTransformation: Transformation from the base of the robot to the camera.
+        aprilTagField: Field layout of the April Tags. Changes every competition.
         """
 
         self.cameraName = cameraName
@@ -35,6 +37,14 @@ class AprilTagCamera:
 
 
     def get_estimated_global_pose(self) -> Optional[EstimatedRobotPose]:
+        """
+        Can return either the robot's current position or None, None, depending on camera
+        connectivity
+
+        Returns: 
+        Optional[EstimatedRobotPose]: None, None, or the robot's estimated position based
+        on what the camera sees
+        """
         result = self.estimator.update()
         if result:
             return result, result.timestampSeconds
@@ -42,9 +52,15 @@ class AprilTagCamera:
             return None, None
 
     def get_estimated_global_pose_2d(self) -> Optional[Pose2d]:
-        result = self.estimator.update()
-        if result:
-            return result.estimatedPose.toPose2d(), result.timestampSeconds
+        """
+        Returns the robot's estimated position as a Pose2D
+        """
+        result = self.get_estimated_global_pose()
+        robotPose2d:EstimatedRobotPose = result[0]
+        positionTimestamp = result[1]
+
+        if robotPose2d:
+            return robotPose2d.estimatedPose.toPose2d(), positionTimestamp
 
 
     def get_tags(self) -> dict[int, Transform3d]:

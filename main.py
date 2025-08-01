@@ -1,7 +1,6 @@
 import time
 import ntcore
 import cv2
-import wpimath
 from ConstantsAndUtils.Constants import PhotonLibConstants, BaseConstants
 from Classes.AprilTagCamera import *
 from Classes.ReefCamera import *
@@ -42,7 +41,6 @@ def main():
     aprilTagCameraBack = AprilTagCamera(PhotonLibConstants.APRIL_TAG_BACK_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_BACK_TRANSFORMATION, apriltag.AprilTagField.k2025ReefscapeWelded)
     reefCamera = ReefCamera(PhotonLibConstants.REEF_CAMERA_NAME, PhotonLibConstants.ROBOT_TO_CAMERA_REEF_TRANSFORMATION)
 
-
     visionTable: NetworkTable = inst.getTable("Vision")
 
     # Publishers to publish the 2 camera's estimated positions, and the odometry's position
@@ -74,6 +72,7 @@ def main():
     odometryRobotPosePublisher.set(PhotonLibConstants.DEFAULT_ROBOT_POSE) 
 
     while True:
+        # Camera connection stuff
         frontCameraConnection, backCameraConnection, reefCameraConnection = aprilTagCameraFront.isConnected(), aprilTagCameraBack.isConnected(), reefCamera.isConnected()
 
         aprilFrontCameraConnectionPublisher.set(frontCameraConnection)
@@ -115,7 +114,7 @@ def main():
                     else:
                         robotBackPosePublisher.set(Pose3d(Translation3d(0, 0, 0), Rotation3d(0, 0, 0)))
 
-        
+        # Coral and algae section of loop
         if PhotonLibConstants.shouldTestReef:
             if reefCameraConnection:
                 coralNetworkTables, algaeNetworkTables = ReefCamera.grabPastReef(coralSubscribers, algaeSubscribers)
