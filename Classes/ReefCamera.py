@@ -1,7 +1,7 @@
 from ConstantsAndUtils.Constants import PhotonLibConstants
 from photonlibpy.photonCamera import PhotonCamera
 from wpimath.geometry import Transform3d, Pose3d
-from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget # Remove ".targeting" from the import path if not on orange pi
+from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget # If this throws error, upgrade photonlibpy to newest version
 from ntcore import BooleanArrayPublisher, BooleanPublisher, NetworkTable, BooleanArraySubscriber
 from Classes.Vector import vector
 from Classes.Hitbox import hitbox
@@ -76,6 +76,7 @@ class ReefCamera:
         for algaeLevel, publisher in zip(algaeTotalList, algaePublishers):
             publisher.set(algaeLevel)
         
+        ### Debug stuff for coral's that are seen ###
         #coralPose3dSeen = []
 
         # for coralLevel in coralTotalList:
