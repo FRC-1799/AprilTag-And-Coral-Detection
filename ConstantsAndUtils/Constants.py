@@ -2,11 +2,11 @@ from wpimath.geometry import Transform3d, Rotation3d, Translation2d, Rotation2d,
 import math
 
 class BaseConstants:
-    serverName = "127.0.0.1"
+    serverName = "10.17.99.2"
 
 class PhotonLibConstants:
     # Debug values and camera names
-    shouldTestAprilTags = False
+    shouldTestAprilTags = True
     shouldTestReef = True
     robotReal = True
     APRIL_TAG_FRONT_CAMERA_NAME = "AprilTag0"

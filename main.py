@@ -6,7 +6,7 @@ from ConstantsAndUtils.Constants import PhotonLibConstants, BaseConstants
 from Classes.AprilTagCamera import *
 from Classes.ReefCamera import *
 from wpimath.geometry import Pose3d, Rotation3d
-import keyboard
+# import keyboard
 from wpilib import DriverStation, SmartDashboard
 from wpimath.units import degreesToRadians
 from ConstantsAndUtils import FieldMirroringUtils
@@ -133,12 +133,12 @@ def main():
                     
 
 
-        if keyboard.is_pressed("q"):
-            aprilFrontCameraConnectionPublisher.set(False)
-            aprilBackCameraConnectionPublisher.set(False)
-            inst.disconnect()
-            cv2.destroyAllWindows()
-            break
+        # if keyboard.is_pressed("q"):
+        #     aprilFrontCameraConnectionPublisher.set(False)
+        #     aprilBackCameraConnectionPublisher.set(False)
+        #     inst.disconnect()
+        #     cv2.destroyAllWindows()
+        #     break
 
         time.sleep(0.01) # 10 ms
 
