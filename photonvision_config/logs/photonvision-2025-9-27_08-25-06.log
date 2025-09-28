@@ -7015,3 +7015,5 @@ Name: exposure_dynamic_framerate, Kind: kBoolean, Value: 1, Min: 0, Max: 1, Dflt
 [2025-09-27 20:34:57] [Camera - USBFrameProvider - Reef2] [ERROR] Error grabbing image: timed out getting frame
 [2025-09-27 20:34:58] [Camera - USBFrameProvider - Reef2] [ERROR] Error grabbing image: timed out getting frame
 [2025-09-27 20:34:58] [Camera - USBFrameProvider - Reef2] [ERROR] Error grabbing image: timed out getting frame
+[2025-09-27 20:37:01] [NetworkTables - NetworkTablesManager] [INFO] NT: INFO 20: DISCONNECTED NT4 connection: connection timed out (NetworkClient.cpp:468)
+[2025-09-27 20:37:01] [NetworkTables - NetworkTablesManager] [ERROR] NT lost connection to 10.17.99.2:5810! (NT version 1025). Will retry in background.
