@@ -15,10 +15,10 @@ class PhotonLibConstants:
     
     
     # Camera Transformation    
-    ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(0.08, 0.255, 0.552, Rotation3d(0, 0, 0)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
-    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(-0.293, 0.297, 0.627, Rotation3d.fromDegrees(0, 0, 180)) # Back camera. This one is for april tags. ID 1
-    ROBOT_TO_CAMERA_REEF_TRANSFORMATION = Transform3d(0.118, 0.266, 1.001, Rotation3d.fromDegrees(0, 10, 0)) # Front camera above the other one. This one is tilted and for coral. ID 2
-    ROBOT_TO_CAMERA_REEF_TRANSFORMATION2D = Transform2d(-0.118, -0.266, Rotation2d.fromDegrees(10)) # Front camera above the other one. This one is tilted and for coral. ID 2
+    ROBOT_TO_CAMERA_FRONT_TRANSFORMATION = Transform3d(-0.08, 0.255, 0.552, Rotation3d.fromDegrees(0, 0, 180)) # Front camera below the other one. This one is not tilted and for april tags. ID 0
+    ROBOT_TO_CAMERA_BACK_TRANSFORMATION = Transform3d(0.293, 0.297, 0.627, Rotation3d.fromDegrees(0, 0, 0)) # Back camera. This one is for april tags. ID 1
+    ROBOT_TO_CAMERA_REEF_TRANSFORMATION = Transform3d(-0.118, -0.266, 1.001, Rotation3d.fromDegrees(0, 10, 180)) # Front camera above the other one. This one is tilted and for coral. ID 2
+    ROBOT_TO_CAMERA_REEF_TRANSFORMATION2D = Transform2d(-0.118, -0.266, Rotation2d.fromDegrees(190)) # Front camera above the other one. This one is tilted and for coral. ID 2
 
     # Detection Info
     OBJECT_IDS = {0: "Algae", 1: "Coral"}
